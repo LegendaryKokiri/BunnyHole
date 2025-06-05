@@ -1,8 +1,5 @@
 import {BunnyTab} from "./bunny_tab.mjs";
 
-// TODO: Scoping! None of these fields should be able to be set outside of the class.
-const ROOT_ID = "ROOT_NODE";
-
 function isUndefined(value) {
     return typeof value === "undefined"
 }
@@ -13,16 +10,27 @@ class BunnyHole {
     #parent = undefined;
     #children = [];
 
-    createNode(bunnyTab, parentURL = undefined) {
-        const parentNode = isUndefined(parentURL)
-            ? this
-            : this.searchByURL(new BunnyTab(-1, "<Search Node>", parentURL));
-        if(isUndefined(parentNode)) {
-            console.error(`BunnyHole.createNode(): Search for ${parentURL} failed`);
+    createNode(bunnyTab, parentURL = undefined, useRootIfOrphan = false) {
+        // If the target URL already exists, don't make a new one.
+        // TODO (Post-V0) Add a user option to link to the existing node in a new parent--> child relationship instead of ignoring it
+        if(!isUndefined(this.searchByURL(bunnyTab))) {
+            console.log("bunny_hole.createNode(): No tab added (URL already exists)");
+            this.print();
             return;
         }
 
-        // TODO If the tabURL matches a node already in the BunnyHole, link an alias to that node instead of making a new one.
+        let parentNode = isUndefined(parentURL)
+            ? this
+            : this.searchByURL(new BunnyTab(-1, "<Search Node>", parentURL));
+        if(isUndefined(parentNode)) {
+            if(useRootIfOrphan) {
+                parentNode = this;
+            } else {
+                console.error(`BunnyHole.createNode(): Search for ${parentURL} failed`);
+                return;
+            }
+        }
+
         const newNode = new BunnyHole();
         newNode.#tab = bunnyTab;
         newNode.#isRoot = false;
