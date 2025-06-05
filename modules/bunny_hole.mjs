@@ -1,3 +1,5 @@
+import {BunnyTab} from "./bunny_tab.mjs";
+
 // TODO: Scoping! None of these fields should be able to be set outside of the class.
 const ROOT_ID = "ROOT_NODE";
 
@@ -6,40 +8,50 @@ function isUndefined(value) {
 }
 
 class BunnyHole {
-    #id = ROOT_ID;
-    #url = undefined;
+    #tab = new BunnyTab(-1, "<Root Node>", "<No URL>");
+    #isRoot = true;
     #parent = undefined;
     #children = [];
 
-    createNode(tabID, tabURL, parentID = undefined) {
-        const parentNode = isUndefined(parentID) ? this : this.searchById(parentID);
+    createNode(bunnyTab, parentURL = undefined) {
+        const parentNode = isUndefined(parentURL)
+            ? this
+            : this.searchByURL(new BunnyTab(-1, "<Search Node>", parentURL));
         if(isUndefined(parentNode)) {
-            console.error("BunnyHole.createNode(): Could not locate parent ID " + parentID + " in the given Bunny Hole");
+            console.error(`BunnyHole.createNode(): Search for ${parentURL} failed`);
             return;
         }
 
+        // TODO If the tabURL matches a node already in the BunnyHole, link an alias to that node instead of making a new one.
         const newNode = new BunnyHole();
-        newNode.#id = tabID;
-        newNode.#url = tabURL;
+        newNode.#tab = bunnyTab;
+        newNode.#isRoot = false;
         newNode.#parent = parentNode;
         parentNode.#children[parentNode.#children.length] = newNode;
 
         this.print();
     }
 
-    searchById(id) {
-        console.log(`Checking ${this.#id} against ${id}`);
-        if(this.#id === id) return this;
-        console.log(`Searching ${this.#children.length} children for ${id}`);
+    #search(target, nodeEvalFunc) {
+        const current = nodeEvalFunc(this);
+        if(current === target) return this;
 
         for (let i = 0; i < this.#children.length; i++) {
-            const searchResult = this.#children[i].searchById(id);
+            const searchResult = this.#children[i].#search(target, nodeEvalFunc);
             if(!isUndefined(searchResult)) return searchResult;
         }
     }
 
+    searchByTabID(bunnyTab) {
+        return this.#search(bunnyTab.id, (node) => node.#tab.id);
+    }
+
+    searchByURL(bunnyTab) {
+        return this.#search(bunnyTab.url, (node) => node.#tab.url);
+    }
+
     toString() {
-        return `<BunnyNode ID=${this.#id}> (${this.#children.length})` 
+        return `[BunnyNode ${this.#tab.toString()} (${this.#children.length})]` 
     }
 
     print(depth=0) {
