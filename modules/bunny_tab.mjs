@@ -6,7 +6,7 @@ class BunnyTab {
     constructor(id, title, url) {
         this.#id = id;
         this.#title = title;
-        this.#url = this.#parseURL(url);
+        this.#url = this.#parseUrl(url);
     }
 
     get id() {
@@ -25,7 +25,7 @@ class BunnyTab {
         return `[BunnyTab "${this.#title}"]`
     }
 
-    #parseURL(url) {
+    #parseUrl(url) {
         return url.split("#")[0]; // Remove named anchor
     }
 

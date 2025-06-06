@@ -27,7 +27,7 @@
 	},
 
 	"background": {
-		"scripts": ["background_scripts/tab_tracker.js"],
+		"scripts": ["background_scripts/background.js"],
 		"type": "module"
 	}
 }
