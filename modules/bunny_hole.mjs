@@ -1,8 +1,5 @@
 import {BunnyTab} from "./bunny_tab.mjs";
-
-function isUndefined(value) {
-    return typeof value === "undefined"
-}
+import { isUndefined } from "./utils.mjs";
 
 class BunnyHole {
     #tab = new BunnyTab(-1, "<Root Node>", "<No URL>");
@@ -30,11 +27,7 @@ class BunnyHole {
     createNode(bunnyTab, parentUrl = undefined, useRootIfOrphan = false) {
         // If the target URL already exists, don't make a new one.
         // TODO (Post-V0) Add a user option to link to the existing node in a new parent--> child relationship instead of ignoring it
-        if(!isUndefined(this.searchByUrl(bunnyTab))) {
-            console.log("bunny_hole.createNode(): No tab added (URL already exists)");
-            this.print();
-            return;
-        }
+        if(!isUndefined(this.searchByUrl(bunnyTab))) return;
 
         let parentNode = isUndefined(parentUrl)
             ? this
@@ -52,7 +45,6 @@ class BunnyHole {
         newNode.#tab = bunnyTab;
         newNode.#parent = parentNode;
         parentNode.#children[parentNode.#children.length] = newNode;
-
         this.print();
     }
 
