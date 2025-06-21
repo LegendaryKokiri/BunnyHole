@@ -6,8 +6,8 @@ const DIST_PATH = path.join(__dirname, "/dist");
 
 module.exports = {
     entry: {
-        "popup": "./src/popup/popup.js",
-        "sidebar": "./src/sidebar/sidebar.js"
+        "popup": "./src/ui/popup.js",
+        "sidebar": "./src/ui/sidebar.js"
     },
 
     output: {
@@ -20,12 +20,12 @@ module.exports = {
         new HTMLWebpackPlugin({
             title: "Bunny Hole",
             filename: "./popup.html",
-            template: "./src/popup/popup.html"
+            template: "./src/ui/popup.html"
         }),
         new HTMLWebpackPlugin({
             title: "Bunny Hole",
             filename: "./sidebar.html",
-            template: "./src/sidebar/sidebar.html"
+            template: "./src/ui/sidebar.html"
         }),
         new CopyWebpackPlugin({
             patterns: [
@@ -41,7 +41,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /.js$/,
+                test: /.(js|jsx)$/,
                 exclude: /node_modules/,
                 use: {
                     loader: "babel-loader",
