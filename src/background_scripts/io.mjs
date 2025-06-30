@@ -1,5 +1,5 @@
-import { BunnyTab } from "../modules/bunny_tab.mjs";
-import { BunnyHole } from "../modules/bunny_hole.mjs";
+import BunnyTab from "../modules/bunny_tab.mjs";
+import BunnyHole from "../modules/bunny_hole.mjs";
 import { MESSAGE_NEW, MESSAGE_LOAD, MESSAGE_SAVE, MESSAGE_CLOSE, MESSAGE_IO_COMPLETE } from "../modules/constants.mjs";
 
 class BunnyHoleIO {
@@ -50,6 +50,8 @@ class BunnyHoleIO {
      * @param {*} sendResponse 
      */
     #handleMessage(message, sender, sendResponse) {
+        console.log("IO Received message:");
+        console.log(message);
         switch(message) {
             case MESSAGE_NEW:
                 this.#newBunnyHole();

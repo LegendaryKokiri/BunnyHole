@@ -1,0 +1,56 @@
+:root {
+    --squash-percent-Y: 0.95;
+    --squash-percent-X: calc(1.0 / var(--squash-percent-Y)) 
+}
+
+.buttonDangerous {
+    background-color: #9e1818;
+    border-radius: 6px;
+    border-style: none;
+    box-shadow: 0px 5px 5px #222222;
+    box-sizing: border-box;
+    color: #dddddd;
+    cursor: pointer;
+    font-family: "Helvetica", "Trebuchet MS", sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 16px;
+    transition: all 120ms;
+    transition-timing-function: ease-in-out;
+}
+
+.buttonDangerous:hover {
+    background-color: #f16f6f;
+    color: #000000;
+}
+
+.buttonDangerous:active {
+    box-shadow: 0px 1px 1px #000000;
+    transform: scaleX(var(--squash-percent-X)) scaleY(var(--squash-percent-Y)) translateY(5px);
+}
+
+.buttonStandard {
+    background-color: #7fffd4;
+    border-radius: 6px;
+    border-style: none;
+    box-shadow: 0px 5px 5px #222222;
+    box-sizing: border-box;
+    color: #000000;
+    cursor: pointer;
+    font-family: "Helvetica", "Trebuchet MS", sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 16px;
+    transition: all 120ms;
+    transition-timing-function: ease-in-out;
+}
+
+.buttonStandard:hover {
+    background-color: #00694f;
+    color: #dfdfdf;
+}
+
+.buttonStandard:active {
+    box-shadow: 0px 1px 1px #000000;
+    transform: scaleX(var(--squash-percent-X)) scaleY(var(--squash-percent-Y)) translateY(5px);
+}

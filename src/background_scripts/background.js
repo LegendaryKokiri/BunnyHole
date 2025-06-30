@@ -45,4 +45,4 @@ browser.runtime.onInstalled.addListener(handleInstallation);
 // INITIALIZE MODULES
 const io = new BunnyHoleIO();
 const webTracker = new WebTracker();
-io.addCallback(webTracker.ioCallback)
+io.addCallback(webTracker.ioCallback);

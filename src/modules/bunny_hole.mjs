@@ -1,10 +1,47 @@
-import {BunnyTab} from "./bunny_tab.mjs";
+import BunnyTab from "./bunny_tab.mjs";
 import { isUndefined } from "./utils.mjs";
 
+const ROOT_NODE_ID  = -1;
+const ROOT_NODE_TITLE = "<Root Node>";
+const ROOT_NODE_URL = "<No URL>";
+
 class BunnyHole {
-    #tab = new BunnyTab(-1, "<Root Node>", "<No URL>");
+    // INTERNAL STATE
+    #tab = new BunnyTab(ROOT_NODE_ID, ROOT_NODE_TITLE, ROOT_NODE_URL);
     #parent = undefined;
     #children = [];
+    
+    // REACT INTEGRATION
+    static #reactKey = 1;
+    #jsObject = this.createJsObject();
+
+    constructor() {
+        browser.runtime.sendMessage(this.#jsObject);
+    }
+
+    get jsObject() {
+        return this.#jsObject;
+    }
+
+    validateJsObject(jsObject) {
+        if(typeof jsObject !== "object") return false;
+        if(!Object.hasOwn(jsObject, "title")) return false;
+        if(!Object.hasOwn(jsObject, "url")) return false;
+        if(!Object.hasOwn(jsObject, "reactKey")) return false;
+        if(!Object.hasOwn(jsObject, "children")) return false;
+        return true;
+    }
+
+    /**
+     * Creates a JavaScript object representing a BunnyHole node.
+     * 
+     * @param {string}   [title=""]
+     * @param {string}   [url=""]
+     * @param {Object[]} [children=[]] 
+     */
+    createJsObject(title = ROOT_NODE_TITLE, url = ROOT_NODE_URL, children = []) {
+        return {title: title, url: url, reactKey: BunnyHole.#reactKey++, children: children};
+    }
 
     /**
      * Creates a new node in this BunnyHole.
@@ -44,7 +81,13 @@ class BunnyHole {
         const newNode = new BunnyHole();
         newNode.#tab = bunnyTab;
         newNode.#parent = parentNode;
-        parentNode.#children[parentNode.#children.length] = newNode;
+
+        const addIndex = parentNode.#children.length;
+        parentNode.#children[addIndex] = newNode;
+        parentNode.#jsObject.children[addIndex] = this.createJsObject(bunnyTab.title, bunnyTab.url);
+
+        console.log("bunny_hole.mjs - BunnyHole.createNode(): Sending message");
+        browser.runtime.sendMessage(this.#jsObject);
         this.print();
     }
 
@@ -109,4 +152,4 @@ class BunnyHole {
  * MODULE EXPORT *
  *****************/
 
-export {BunnyHole}
+export default BunnyHole;

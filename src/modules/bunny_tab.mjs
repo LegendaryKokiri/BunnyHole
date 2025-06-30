@@ -31,4 +31,4 @@ class BunnyTab {
 
 }
 
-export {BunnyTab}
+export default BunnyTab;

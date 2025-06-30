@@ -1,5 +1,5 @@
-import { BunnyTab } from "../modules/bunny_tab.mjs";
-import { BunnyHole } from "../modules/bunny_hole.mjs";
+import BunnyTab from "../modules/bunny_tab.mjs";
+import BunnyHole from "../modules/bunny_hole.mjs";
 import { isUndefined } from "../modules/utils.mjs";
 
 class WebTracker {

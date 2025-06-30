@@ -1,0 +1,46 @@
+.bunnyNode {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    font-family: "Helvetica", "Trebuchet MS", sans-serif;
+    gap: 0px 0px;
+}
+
+.bunnyNodeTitle {
+    background-color: #7fffd4;
+    border-radius: 6px;
+    border-style: none;
+    box-sizing: border-box;
+    color: #000000;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 0px;
+    padding: 10px 16px;
+    transition: all 120ms;
+    transition-timing-function: ease-in-out;
+}
+
+.bunnyNodeUrl {
+    background-color: #c8ffed;
+    border-radius: 6px;
+    border-style: none;
+    box-sizing: border-box;
+    color: #000000;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding: 6px 16px;
+    transition: all 120ms;
+    transition-timing-function: ease-in-out;
+}
+
+.bunnyNodeInput {
+    border: 0;
+    border-bottom: 3px solid;
+    border-image: linear-gradient(to right, #7fffd4, #00694f);
+    border-image-slice: 1;
+    font-family: "Helvetica", "Trebuchet MS", sans-serif;
+    font-size: 16px;
+    outline: 0;
+}
