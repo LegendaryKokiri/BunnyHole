@@ -215,4 +215,4 @@ class WebTracker {
 
 }
 
-export { WebTracker }
+export default WebTracker;

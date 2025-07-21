@@ -50,8 +50,6 @@ class BunnyHoleIO {
      * @param {*} sendResponse 
      */
     #handleMessage(message, sender, sendResponse) {
-        console.log("IO Received message:");
-        console.log(message);
         switch(message) {
             case MESSAGE_NEW:
                 this.#newBunnyHole();
@@ -98,7 +96,7 @@ class BunnyHoleIO {
     }
     
     #saveBunnyHole() {
-    
+        // TODO: We'll probably have to make a popup
     }
     
     #closeBunnyHole() {
@@ -107,4 +105,4 @@ class BunnyHoleIO {
     }
 }
 
-export {BunnyHoleIO};
+export default BunnyHoleIO;

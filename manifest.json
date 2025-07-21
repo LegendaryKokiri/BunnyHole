@@ -27,7 +27,7 @@
 	},
 
 	"background": {
-		"scripts": ["background_scripts/background.js"],
+		"scripts": ["background_scripts/io.mjs", "background_scripts/web_tracker.mjs", "background_scripts/background.js"],
 		"type": "module"
 	}
 }

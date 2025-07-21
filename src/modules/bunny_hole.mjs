@@ -23,7 +23,7 @@ class BunnyHole {
         return this.#jsObject;
     }
 
-    validateJsObject(jsObject) {
+    static validateJsObject(jsObject) {
         if(typeof jsObject !== "object") return false;
         if(!Object.hasOwn(jsObject, "title")) return false;
         if(!Object.hasOwn(jsObject, "url")) return false;
