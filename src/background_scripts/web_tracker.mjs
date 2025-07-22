@@ -39,13 +39,18 @@ class WebTracker {
     /**
      * Updates this WebTracker in response to an IO event.
      * 
-     * Reads the contents of all tabs to initialize the tabMap.
-     * Then, if the BunnyHole is defined, enables all listeners for this WebTracker.
+     * If the BunnyHOle is undefined, disables all listeners for this WebTracker.
+     * Otherwise, reads the contents of all tabs to initialize the tabMap,
+     * then enables all listeners for this WebTracker.
      * 
      * @param {BunnyHole} bunnyHole 
      */
     #ioCallback(bunnyHole) {
         this.#bunnyHole = bunnyHole;
+        if(isUndefined(this.#bunnyHole)) {
+            this.#disableListeners();
+            return;
+        }
 
         browser.tabs.query({}).then(
             (allTabs) => {
@@ -53,8 +58,7 @@ class WebTracker {
                     this.#mapTabByInfo(tab);
                 }
 
-                if(!isUndefined(this.#bunnyHole)) this.#enableListeners();
-                else this.#disableListeners();
+                this.#enableListeners();
             },
             (error) => {
                 console.error(error);

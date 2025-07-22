@@ -15,8 +15,9 @@ function SidebarApp() {
 
     useEffect(() => {
         browser.runtime.onMessage.addListener(handleMessage);
-        // const page = browser.extension.getBackgroundPage();
-        // page.exposed();
+        return () => {
+            browser.runtime.onMessage.removeListener(handleMessage);
+        }
     }, []);
 
     return (

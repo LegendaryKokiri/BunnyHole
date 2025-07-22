@@ -13,10 +13,10 @@ class BunnyHole {
     
     // REACT INTEGRATION
     static #reactKey = 1;
-    #jsObject = this.createJsObject();
+    #jsObject = undefined;
 
-    constructor() {
-        browser.runtime.sendMessage(this.#jsObject);
+    constructor(title = ROOT_NODE_TITLE, url = ROOT_NODE_URL) {
+        this.#jsObject = this.createJsObject(title, url);
     }
 
     get jsObject() {
@@ -35,8 +35,8 @@ class BunnyHole {
     /**
      * Creates a JavaScript object representing a BunnyHole node.
      * 
-     * @param {string}   [title=""]
-     * @param {string}   [url=""]
+     * @param {string}   [title=ROOT_NODE_TITLE]
+     * @param {string}   [url=ROOT_NODE_URL]
      * @param {Object[]} [children=[]] 
      */
     createJsObject(title = ROOT_NODE_TITLE, url = ROOT_NODE_URL, children = []) {
@@ -50,7 +50,7 @@ class BunnyHole {
      * The node is automatically placed in the hierarchy according to the optional
      * parameters, unless a node for `bunnyTab`'s URL already exists, in which case
      * no new node is added.
-     * If parentUrl is not undefined, then the node is made a child of the node
+     * If parentUrl is defined, then the node is made a child of the node
      * whose URL matches parentUrl, if such a node exists.
      * If no such node exists, then the value of `useRootIfOrphan` determines the
      * function's behavior.
@@ -78,17 +78,21 @@ class BunnyHole {
             }
         }
 
-        const newNode = new BunnyHole();
+        const newNode = new BunnyHole(bunnyTab.title, bunnyTab.url);
         newNode.#tab = bunnyTab;
         newNode.#parent = parentNode;
 
+        console.log(`Parent Node has ${parentNode.#children.length} child(ren) (${parentNode.#jsObject.children.length} in jsObject)`);
         const addIndex = parentNode.#children.length;
         parentNode.#children[addIndex] = newNode;
-        parentNode.#jsObject.children[addIndex] = this.createJsObject(bunnyTab.title, bunnyTab.url);
+        parentNode.#jsObject.children[addIndex] = newNode.#jsObject;
+        console.log(`Parent Node JS Object updated (Children: ${parentNode.#children.length} and ${parentNode.#jsObject.children.length})`);
+        this.printJSObject(this.#jsObject);
 
         console.log("bunny_hole.mjs - BunnyHole.createNode(): Sending message");
         browser.runtime.sendMessage(this.#jsObject);
         this.print();
+        console.log("===NODE CREATED===\n\n");
     }
 
     /**
@@ -146,6 +150,13 @@ class BunnyHole {
         }
     }
 
+    printJSObject(jsObject, depth=0) {
+        console.log(`JS|- ${"  ".repeat(depth)}${jsObject.title}`);
+        for (let i = 0; i < jsObject.children.length; i++) {
+            this.printJSObject(jsObject.children[i], depth+1)
+        }
+    }
+
 }
 
 /* ************* *
@@ -153,3 +164,4 @@ class BunnyHole {
  *****************/
 
 export default BunnyHole;
+export { ROOT_NODE_TITLE, ROOT_NODE_URL };

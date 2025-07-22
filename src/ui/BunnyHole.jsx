@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+import { ROOT_NODE_TITLE, ROOT_NODE_URL } from "../modules/bunny_hole.mjs";
 import "./bunnyhole.css";
 
 function BunnyHole({bunnyHoleRootNode}) {
@@ -13,9 +14,13 @@ function BunnyHole({bunnyHoleRootNode}) {
 function BunnyNode({data, depth = 0}) {
     return (
         <div className="bunnyNode">
-            {data.title == "<Root Node>" ? <></> : <p className="bunnyNodeTitle" >{data.title}</p>}
-            {data.title == "<No URL>" ? <></> : <a className="bunnyNodeUrl">{data.url}</a>}
-            <textarea className="bunnyNodeInput" name="Notes" rows="4" cols="88"></textarea>
+            {data.title === ROOT_NODE_TITLE
+                ? <></>
+                : <>
+                    <a className="bunnyNodeTitle" href={data.url}>{data.title}</a>
+                    <textarea className="bunnyNodeInput" name="Notes" rows="4" cols="88"></textarea>
+                </>
+            }
             {
                 data.children &&
                 data.children.map((child) => {
