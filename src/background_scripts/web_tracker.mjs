@@ -177,7 +177,9 @@ class WebTracker {
      */
     #handleWebNavCreatedNavigationTarget(details) {
         this.#navInNewTab = true;
-        this.#sourceUrl = this.#tabMap.get(details.sourceTabId).url;
+        const sourceTab = this.#tabMap.get(details.sourceTabId);
+        if(isUndefined(sourceTab)) return; // Link was clicked from sidebar UI
+        this.#sourceUrl = sourceTab.url;
     }
 
     /**
