@@ -46,13 +46,3 @@ browser.runtime.onInstalled.addListener(handleInstallation);
 const io = new BunnyHoleIO();
 const webTracker = new WebTracker();
 io.addCallback(webTracker.ioCallback);
-
-/* ****************** *
- * EXTERNAL FUNCTIONS *
- **********************/
-
-function exposed() {
-    console.log("Reached the exposed function!");
-}
-
-window.exposed = exposed;

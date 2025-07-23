@@ -8,7 +8,7 @@ function SidebarApp() {
 
     // TODO: Can we validate the object more cleanly than this?
     // Perhaps a function in the bunny_hole.mjs module would be better suited for this.
-    const handleMessage = (message, sender, sendResponse) => {
+    const handleMessage = (message, _sender, _sendResponse) => {
         if(!BunnyHoleClass.validateJsObject(message)) return;        
         setBunnyHole(message);
     }

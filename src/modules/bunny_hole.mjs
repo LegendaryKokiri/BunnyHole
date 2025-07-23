@@ -5,6 +5,8 @@ const ROOT_NODE_ID  = -1;
 const ROOT_NODE_TITLE = "<Root Node>";
 const ROOT_NODE_URL = "<No URL>";
 
+const JS_OBJ_ALL_KEYS = ["title", "url", "reactKey", "children"];
+
 class BunnyHole {
     // INTERNAL STATE
     #tab = new BunnyTab(ROOT_NODE_ID, ROOT_NODE_TITLE, ROOT_NODE_URL);
@@ -23,15 +25,6 @@ class BunnyHole {
         return this.#jsObject;
     }
 
-    static validateJsObject(jsObject) {
-        if(typeof jsObject !== "object") return false;
-        if(!Object.hasOwn(jsObject, "title")) return false;
-        if(!Object.hasOwn(jsObject, "url")) return false;
-        if(!Object.hasOwn(jsObject, "reactKey")) return false;
-        if(!Object.hasOwn(jsObject, "children")) return false;
-        return true;
-    }
-
     /**
      * Creates a JavaScript object representing a BunnyHole node.
      * 
@@ -40,7 +33,32 @@ class BunnyHole {
      * @param {Object[]} [children=[]] 
      */
     createJsObject(title = ROOT_NODE_TITLE, url = ROOT_NODE_URL, children = []) {
-        return {title: title, url: url, reactKey: BunnyHole.#reactKey++, children: children};
+        return {
+            title: title,
+            url: url,
+            reactKey: BunnyHole.#reactKey++,
+            children: children
+        };
+    }
+
+    /**
+     * Verifies that the given object represents a BunnyHole.
+     * 
+     * @param {Object} jsObject 
+     * @returns {boolean} true if the object is a BunnyHole, false otherwise
+     */
+    static validateJsObject(jsObject) {
+        if(typeof jsObject !== "object") return false;
+
+        for(const key of JS_OBJ_ALL_KEYS) {
+            if(!Object.hasOwn(jsObject, key)) return false;
+        }
+
+        for(const child of jsObject.children) {
+            if(!this.validateJsObject(child)) return false;
+        }
+
+        return true;
     }
 
     /**
