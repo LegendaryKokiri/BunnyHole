@@ -13,7 +13,7 @@ function BunnyHole({bunnyHoleRootNode}) {
 
 function BunnyNode({data, depth = 0}) {
     return (
-        <div className="bunnyNode">
+        <div className="bunnyNode" style={{marginLeft: `${depth * 24}px`}}>
             {data.title === ROOT_NODE_TITLE
                 ? <></>
                 : <>

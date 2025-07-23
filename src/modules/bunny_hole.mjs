@@ -82,17 +82,11 @@ class BunnyHole {
         newNode.#tab = bunnyTab;
         newNode.#parent = parentNode;
 
-        console.log(`Parent Node has ${parentNode.#children.length} child(ren) (${parentNode.#jsObject.children.length} in jsObject)`);
         const addIndex = parentNode.#children.length;
         parentNode.#children[addIndex] = newNode;
         parentNode.#jsObject.children[addIndex] = newNode.#jsObject;
-        console.log(`Parent Node JS Object updated (Children: ${parentNode.#children.length} and ${parentNode.#jsObject.children.length})`);
-        this.printJSObject(this.#jsObject);
 
-        console.log("bunny_hole.mjs - BunnyHole.createNode(): Sending message");
         browser.runtime.sendMessage(this.#jsObject);
-        this.print();
-        console.log("===NODE CREATED===\n\n");
     }
 
     /**
@@ -149,14 +143,6 @@ class BunnyHole {
             this.#children[i].print(depth+1)
         }
     }
-
-    printJSObject(jsObject, depth=0) {
-        console.log(`JS|- ${"  ".repeat(depth)}${jsObject.title}`);
-        for (let i = 0; i < jsObject.children.length; i++) {
-            this.printJSObject(jsObject.children[i], depth+1)
-        }
-    }
-
 }
 
 /* ************* *
