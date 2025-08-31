@@ -172,16 +172,17 @@
     flex: 1 1 auto;
 }
 
-.nodeSeparator:is(.repositionActive) .repositionButton {
+.nodeSeparator:is(.repositionActive) .repositionButton,
+.nodeSeparator:is(.repositionTarget) .repositionButton {
     display: inherit;
     flex: 1 1 auto;
 }
 
-.nodeSeparator.nodeSeparator:is(.repositionActive):hover .repositionButton {
+.nodeSeparator:is(.repositionActive):hover .repositionButton {
     transform: scale(1.2, 1.2)
 }
 
-.nodeSeparator.nodeSeparator:is(.repositionActive):active .repositionButton {
+.nodeSeparator:is(.repositionActive):active .repositionButton {
     transform: scale(0.9, 0.9) rotate(-10deg);
 }
 
@@ -197,7 +198,8 @@
     width: 100%;
 }
 
-.nodeSeparator:is(.repositionActive):hover .divider {
+.nodeSeparator:is(.repositionActive):hover .divider,
+.nodeSeparator:is(.repositionTarget) .divider {
     border-top: 8px dashed;
     border-color: #0000ff;
     flex: 1 1 auto;
