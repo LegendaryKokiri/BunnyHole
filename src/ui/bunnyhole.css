@@ -1,12 +1,80 @@
+@keyframes reveal {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0%); }
+}
+
+@-webkit-keyframes reveal {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0%); }
+}
+
+.bunnyHole {
+    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    font-family: "Helvetica", "Trebuchet MS", sans-serif;
+    gap: 0px 0px;
+    justify-content: flex-start;
+}
+
+.bunnyHole > .nestMarker {
+    border-color: #000000;
+    border-left: 2px dotted;
+    width: 0px;
+    margin: 0px 5px 5px 0px;
+    /* height: 100%; */
+}
+
+.bunnyHole > .nestMarker.dragTarget {
+    border-left: 8px dashed;
+    border-color: #0000ff;
+}
+
+.bunnyHole > .content {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 0px 0px;
+    justify-content: flex-start;
+}
+
 .bunnyNode {
     align-items: flex-start;
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     font-family: "Helvetica", "Trebuchet MS", sans-serif;
     gap: 0px 0px;
 }
 
-.bunnyNodeTitle {
+.bunnyNode .body {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0px 0px;
+}
+
+.bunnyNode .body .heading {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.bunnyNode .mainTitle {
+    background-color: #7fffd4;
+    border-radius: 6px;
+    border-style: none;
+    box-sizing: border-box;
+    color: #000000;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 0px;
+    padding: 10px 16px;
+    transition: all 120ms;
+    transition-timing-function: ease-in-out;
+}
+
+.bunnyNode .title {
     background-color: #7fffd4;
     border-radius: 6px;
     border-style: none;
@@ -20,7 +88,15 @@
     transition-timing-function: ease-in-out;
 }
 
-.bunnyNodeUrl {
+.bunnyNode .title:hover {
+    cursor: grab;
+}
+
+.bunnyNode .title:active {
+    cursor: grabbing;
+}
+
+.bunnyNode .url {
     background-color: #c8ffed;
     border-radius: 6px;
     border-style: none;
@@ -35,12 +111,97 @@
     transition-timing-function: ease-in-out;
 }
 
-.bunnyNodeInput {
+.bunnyNode .input {
+    background-color: #fff5b7;
     border: 0;
     border-bottom: 3px solid;
     border-image: linear-gradient(to right, #7fffd4, #00694f);
     border-image-slice: 1;
+    border-radius: 6px;
     font-family: "Helvetica", "Trebuchet MS", sans-serif;
     font-size: 16px;
     outline: 0;
+    padding: 6px 16px;
+    transition: all 120ms;
+    transition-timing-function: ease-in-out;
+}
+
+.bunnyNode .buttonBar {
+    margin-bottom: 0px;
+    opacity: 0;
+    padding: 5px 8px;
+    transition: all 300ms;
+    transform: translateX(-100%);
+}
+
+.bunnyNode:hover .buttonBar {
+    opacity: 1;
+    transform: translateX(0%);
+}
+
+.nodeButton {
+    /* animation: reveal 0.5s forwards;
+    -webkit-animation: reveal 0.5s forwards; */
+    transition: all 120ms;
+}
+
+.nodeButton:hover {
+    transform: scale(1.2, 1.2)
+}
+
+.nodeButton:active {
+    transform: scale(0.9, 0.9) rotate(-10deg);
+}
+
+.bunnyNode .nodeSeparator {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.nodeSeparator .repositionButton {
+    /* animation: reveal 0.5s forwards;
+    -webkit-animation: reveal 0.5s forwards; */
+    transition: all 120ms;
+}
+
+.nodeSeparator:not(.repositionActive) .repositionButton {
+    display: none;
+    flex: 1 1 auto;
+}
+
+.nodeSeparator:is(.repositionActive) .repositionButton {
+    display: inherit;
+    flex: 1 1 auto;
+}
+
+.nodeSeparator.nodeSeparator:is(.repositionActive):hover .repositionButton {
+    transform: scale(1.2, 1.2)
+}
+
+.nodeSeparator.nodeSeparator:is(.repositionActive):active .repositionButton {
+    transform: scale(0.9, 0.9) rotate(-10deg);
+}
+
+.nodeSeparator .divider {
+    border-color: #000000;
+    border-top: 2px dotted;
+    flex: 1 1 auto;
+    height: 5px;
+    margin: 10px 0px;
+    /* animation: reveal 0.5s forwards;
+    -webkit-animation: reveal 0.5s forwards; */
+    transition: all 120ms;
+    width: 100%;
+}
+
+.nodeSeparator:is(.repositionActive):hover .divider {
+    border-top: 8px dashed;
+    border-color: #0000ff;
+    flex: 1 1 auto;
+    height: 5px;
+    margin: 10px 0px;
+    width: 100%;
 }

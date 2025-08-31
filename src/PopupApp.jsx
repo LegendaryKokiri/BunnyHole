@@ -4,11 +4,12 @@ import "./popup.css";
 
 import Button, { ButtonType } from "./ui/input/Button.jsx";
 
-import { MESSAGE_NEW } from "./modules/constants.mjs";
+import { buildIOMessage, IOCommands } from "./modules/messages.mjs";
 
 function PopupApp() {
     const createNew = () => {
-        browser.runtime.sendMessage(MESSAGE_NEW);
+        const message = buildIOMessage(IOCommands.NEW);
+        browser.runtime.sendMessage(message);
         browser.sidebarAction.open();
     }
     

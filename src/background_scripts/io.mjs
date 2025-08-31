@@ -1,6 +1,6 @@
 import BunnyTab from "../modules/bunny_tab.mjs";
 import BunnyHole from "../modules/bunny_hole.mjs";
-import { MESSAGE_NEW, MESSAGE_LOAD, MESSAGE_SAVE, MESSAGE_CLOSE, MESSAGE_IO_COMPLETE } from "../modules/constants.mjs";
+import { IOCommands, MessageTypes, UICommands } from "../modules/messages.mjs";
 
 class BunnyHoleIO {
     #currentBunnyHole = undefined;
@@ -46,22 +46,54 @@ class BunnyHoleIO {
      * Responds to a message event.
      * 
      * @param {number} message 
-     * @param {*} sender 
-     * @param {*} sendResponse 
+     * @param {*} _sender 
+     * @param {*} _sendResponse 
      */
-    #handleMessage(message, sender, sendResponse) {
-        switch(message) {
-            case MESSAGE_NEW:
+    #handleMessage(message, _sender, _sendResponse) {
+        switch(message.type) {
+            case MessageTypes.IO:
+                this.#handleIOMessage(message);
+                break;
+            case MessageTypes.UI:
+                this.#handleUIMessage(message);
+                break;
+            default:
+                break;
+        }
+    }
+
+    #handleIOMessage(message) {
+        switch(message.command) {
+            case IOCommands.NEW:
                 this.#newBunnyHole();
                 break;
-            case MESSAGE_LOAD:
+            case IOCommands.LOAD:
                 this.#loadBunnyHole();
                 break;
-            case MESSAGE_SAVE:
+            case IOCommands.SAVE:
                 this.#saveBunnyHole();
                 break;
-            case MESSAGE_CLOSE:
+            case IOCommands.CLOSE:
                 this.#closeBunnyHole();
+                break;
+            default:
+                break;
+        }
+    }
+
+    #handleUIMessage(message) {
+        switch(message.command) {
+            case UICommands.DELETE_BH_NODE:
+                this.#currentBunnyHole.deleteNode(
+                    message.content.path
+                )
+                break;
+            case UICommands.SWAP_BH_NODES:
+                this.#currentBunnyHole.repositionNode(
+                    message.content.srcPath,
+                    message.content.dstPath,
+                    true
+                );
                 break;
             default:
                 break;

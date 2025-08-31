@@ -1,4 +1,5 @@
 import BunnyTab from "./bunny_tab.mjs";
+import { buildBHMessage } from "./messages.mjs";
 import { isUndefined } from "./utils.mjs";
 
 const ROOT_NODE_ID  = -1;
@@ -104,7 +105,87 @@ class BunnyHole {
         parentNode.#children[addIndex] = newNode;
         parentNode.#jsObject.children[addIndex] = newNode.#jsObject;
 
-        browser.runtime.sendMessage(this.#jsObject);
+        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+    }
+
+    getNode(pathToNode) {
+        if(pathToNode.length === 0) return this;
+        const childNode = this.#children[pathToNode[0]];
+        return childNode.getNode(pathToNode.slice(1))
+    }
+
+    deleteNode(pathToNode) {
+        if(pathToNode.length === 0) return;
+
+        let deleteParent = this;
+        let n = pathToNode.length;
+
+        for(let i = 0; i < n - 1; i++) {
+            deleteParent = deleteParent.#children[pathToNode[i]];
+            console.log("BunnyHole.deleteNode(): Drilling down to %s", deleteParent);
+        }
+
+        console.log("Deleting index %d of %s", pathToNode[n - 1], deleteParent.#children);
+        deleteParent.#children.splice(pathToNode[n - 1], 1);
+        deleteParent.#jsObject.children.splice(pathToNode[n - 1], 1);
+
+        // Report change
+        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+    }
+
+    /**
+     * Repositions a node in this BunnyHole.
+     * 
+     * Moves a node in this BunnyHole to a different location in the same
+     * Bunny Hole. Assumes without checking that the source and destination tabs
+     * exist.
+     * 
+     * If after is true, then places the source node after the destination node.
+     * Otherwise, places the source node before the destination node.
+     * 
+     * @param {BunnyHole} srcNode
+     * @param {BunnyHole} dstNode
+     * @param {boolean}  after 
+     * @returns 
+     */
+    repositionNode(srcPath, dstPath, after) {
+        // Find the source node
+        const srcNode = this.getNode(srcPath);
+        if(isUndefined(srcNode.#parent)) {
+            console.error("Cannot move the root node.");
+            return;
+        }
+        
+        // Find the destination node
+        const dstNode = this.getNode(dstPath);
+        if(isUndefined(dstNode.#parent)) {
+            console.error("Cannot place a node on the same nesting level as the root node.");
+            return;
+        }
+
+        // Remove source tab from parent's children
+        srcNode.#parent.removeChild(srcNode);
+
+        // Replace source tab among destination's children
+        dstNode.#parent.insertChild(srcNode, dstNode, after)
+
+        // Report change
+        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+    }
+
+    // TODO: The only reason that removeChild() wasn't made private was to ease implementation. Could we rectify this?
+    removeChild(sourceNode) {
+        const sourceIndex = this.#children.indexOf(sourceNode);
+        this.#children.splice(sourceIndex, 1);
+        this.#jsObject.children.splice(sourceIndex, 1);
+    }
+
+    // TODO: The only reason that insertChild() wasn't made private was to ease implementation. Could we rectify this?
+    insertChild(sourceNode, destNode, after) {
+        const destIndex = this.#children.indexOf(destNode);
+        const addIndex = after ? destIndex + 1 : destIndex;
+        this.#children.splice(addIndex, 0, sourceNode);
+        this.#jsObject.children.splice(addIndex, 0, sourceNode.jsObject);
     }
 
     /**

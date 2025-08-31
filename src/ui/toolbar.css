@@ -1,0 +1,30 @@
+.toolbar {
+    align-items: center;
+    background-color: aquamarine;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: sticky;
+    right: 0;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.toolbar > .logo {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.toolbar > .buttons {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.toolbarButton {
+    margin-left: 4px;
+    margin-right: 4px;
+}

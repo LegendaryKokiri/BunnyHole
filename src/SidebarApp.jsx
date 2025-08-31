@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import BunnyHoleClass from "./modules/bunny_hole.mjs"
 import BunnyHole from "./ui/BunnyHole.jsx";
 import "./sidebar.css";
+import { MessageTypes } from "./modules/messages.mjs";
+import Toolbar from "./ui/Toolbar.jsx";
+import PromptBox from "./ui/PromptBox.jsx";
 
 function SidebarApp() {
     const [bunnyHole, setBunnyHole] = useState(new BunnyHoleClass().jsObject);
 
-    // TODO: Can we validate the object more cleanly than this?
-    // Perhaps a function in the bunny_hole.mjs module would be better suited for this.
-    const handleMessage = (message, _sender, _sendResponse) => {
-        if(!BunnyHoleClass.validateJsObject(message)) return;        
-        setBunnyHole(message);
+    const handleMessage = (message, _sender, _sendResponse) => {        
+        if(message.type !== MessageTypes.BH) return;     
+        setBunnyHole(message.content);
     }
 
     useEffect(() => {
@@ -22,7 +23,9 @@ function SidebarApp() {
 
     return (
         <div>
-            <BunnyHole bunnyHoleRootNode={bunnyHole}/>
+            <Toolbar />
+            <BunnyHole data={bunnyHole}/>
+            <PromptBox />
         </div>
     )
 }
