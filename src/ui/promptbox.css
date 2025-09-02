@@ -21,7 +21,7 @@
     width: 80%;
 }
 
-.promptBox .promptActive {
+.promptBox.active {
     background-color: #3fbf94;
     transform: translateY(0%);
 }

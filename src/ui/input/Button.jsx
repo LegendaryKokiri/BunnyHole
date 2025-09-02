@@ -2,15 +2,23 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom"
 import "./button.css";
 
-export const ButtonType = Object.freeze({
-    STANDARD: "buttonStandard",
-    DANGEROUS: "buttonDangerous"
-});
+/* ********* *
+ * CONSTANTS *
+ *************/
+const BUTTON_CLASS_NAME = "bhButton";
+const STANDARD_CLASS_NAME = `${BUTTON_CLASS_NAME} standard`;
+const DANGEROUS_CLASS_NAME = `${BUTTON_CLASS_NAME} dangerous`;
 
-function Button({ text, onClick = null, type = ButtonType.STANDARD }) {        
-    return (
-        <button className={type} onClick={onClick}>{text}</button>
-    )
+function Button({ children, onClick = null }) {        
+    return <button onClick={onClick}>{children}</button>
 }
 
-export default Button;
+function ButtonStandard( { children, onClick = null} ) {
+    return <Button className={STANDARD_CLASS_NAME} onClick={onClick}>{children}</Button>
+}
+
+function ButtonDangerous() { children, onClick = null }{
+    return <Button className={DANGEROUS_CLASS_NAME} onClick={onClick}>{children}</Button>
+}
+
+export { ButtonStandard, ButtonDangerous };

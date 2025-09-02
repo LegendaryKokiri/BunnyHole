@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import { ROOT_NODE_TITLE, ROOT_NODE_URL } from "../modules/bunny_hole.mjs";
-import { buildUIDeleteMessage, buildUISwapMessage, validateMessage } from "../modules/messages.mjs";
+import { buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
 import "./bunnyhole.css";
+import { usePrompts, PROMPT_DEACTIVATE, PROMPT_MOVE } from "./PromptBox.jsx";
 
 /* ********* *
  * CONSTANTS *
@@ -174,6 +174,10 @@ function NodeTitle({children, isRoot=false}) {
 function NodeButtonBar({isRoot=false, nodePath, nodePathClassName}) {
     if(isRoot) return <></>;
 
+    // Subscribe to relevant contexts
+    const { promptDispatch } = usePrompts();
+
+    // Declare event handlers
     const deleteNode = () => {
         browser.runtime.sendMessage(
             buildUIDeleteMessage(nodePath)
@@ -182,6 +186,7 @@ function NodeButtonBar({isRoot=false, nodePath, nodePathClassName}) {
 
     const repositionNode = () => {
         beginReposition(nodePathClassName);
+        promptDispatch(PROMPT_MOVE);
     }
 
     return <div className="buttonBar">
@@ -202,17 +207,22 @@ function NodeSeparator({handleClick, depthClassName, nodePathClassName}) {
     </div>
 }
 
-function BunnyNode({data, depth=0, index=0, nodePath=[]}) {
+function BunnyNode({data, nodePath=[]}) {
     // Precomputation
+    const depth = nodePath.length;
     const isRoot = depth === 0;
     const depthClassName = `${NODE_DEPTH_CLASSNAME}${depth}`;
     const nodeRef = useRef(null);
     const pathString = nodePath.join(NODE_PATH_DELIMETER);
     const nodePathClassName = `${NODE_PATH_CLASSNAME}${pathString}`;
 
+    // Subscribe to relevant contexts
+    const { promptDispatch } = usePrompts();
+
     // Declare event handlers
     const confirmReposition = () => {
         completeReposition(nodePath);
+        promptDispatch(PROMPT_DEACTIVATE)
     }
 
     const unpromptReposition = () => {
@@ -248,8 +258,9 @@ function BunnyNode({data, depth=0, index=0, nodePath=[]}) {
     return node;
 }
 
-function BunnyHole({data, depth=0, index=0, nodePath=[]}) {
+function BunnyHole({data, nodePath=[]}) {
     // Precomputation
+    const depth = nodePath.length;
     const isRoot = depth === 0;
     const indent = `${Math.max(depth - 1, 0) * 24}px`;
     const depthClass = `${NODE_DEPTH_CLASSNAME}${depth}`;
@@ -276,14 +287,12 @@ function BunnyHole({data, depth=0, index=0, nodePath=[]}) {
         {svgFilters}
         <div className={`nestMarker ${depthClass}`}></div>
         <div className="content">
-            <BunnyNode data={data} depth={depth} index={index} nodePath={nodePath} />
+            <BunnyNode data={data} nodePath={nodePath} />
             {
                 data.children &&
                 data.children.map((child, index) => {
                     return <BunnyHole key={child.reactKey}
                         data={child}
-                        depth={depth + 1}
-                        index={index}
                         nodePath={nodePath.concat([index])}
                     />
                 })
