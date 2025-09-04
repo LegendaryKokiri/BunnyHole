@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
 import "./bunnyhole.css";
 import { usePrompts, PROMPT_DEACTIVATE, PROMPT_MOVE } from "./PromptBox.jsx";
+import Button, { ButtonCancel } from "./input/Button.jsx";
 
 /* ********* *
  * CONSTANTS *
@@ -31,28 +32,55 @@ const REPOSITION_TARGET_MARKER = "repositionTarget";
  * REPOSITION UTILITIES *
  ************************/
 
-function parsePath(target) {
+function getClassName(target, startingString) {
     for(const c of target.classList) {
-        if(!c.startsWith(NODE_PATH_CLASSNAME)) continue;
-        const pathStrings = c.substring(NODE_PATH_CLASSNAME.length).split(NODE_PATH_DELIMETER);
-        return pathStrings.map((str) => parseInt(str));
+        if(c.startsWith(startingString)) return c;
     }
 
-    return [];
+    return null;
+}
+
+function buildNodeDepthClassName(nodePath) {
+    return `${NODE_DEPTH_CLASSNAME}${nodePath.length}`;
+}
+
+function buildNodePathClassName(nodePath) {
+    return `${NODE_PATH_CLASSNAME}${nodePath.join(NODE_PATH_DELIMETER)}`;
+}
+
+function parsePath(target) {
+    const pathClassName = getClassName(target, NODE_PATH_CLASSNAME);
+    if(pathClassName === null) return [];
+    const pathStrings = pathClassName.substring(NODE_PATH_CLASSNAME.length).split(NODE_PATH_DELIMETER);
+    return pathStrings.map((str) => parseInt(str));
 }
 
 /* *********************** *
  * TWO-CLICK REPOSITIONING *
  ***************************/
 
+function unmarkRepositionTargets() {
+    const targets = [...document.querySelectorAll(SEPARATOR_CLASS)];
+    targets.forEach((item) => {
+        item.classList.remove(REPOSITION_ACTIVE_MARKER);
+    });
+}
+
 function beginReposition(pathClassName) {
     const moving = document.querySelector(`${SEPARATOR_CLASS}:is(.${pathClassName})`);
     moving.classList.add(REPOSITION_ELEMENT_MARKER);
 
-    const targets = document.querySelectorAll(`${SEPARATOR_CLASS}:not(.${pathClassName})`);
+    const descendantSelector = `[class^='${pathClassName}'], [class*=' ${pathClassName}']`;
+    const targets = document.querySelectorAll(`${SEPARATOR_CLASS}:not(${descendantSelector})`);
     targets.forEach((item) => {
         item.classList.add(REPOSITION_ACTIVE_MARKER);
     });
+}
+
+function cancelReposition() {
+    const moving = document.querySelector(`${SEPARATOR_CLASS}:is(.${REPOSITION_ELEMENT_MARKER})`);
+    moving.classList.remove(REPOSITION_ELEMENT_MARKER);
+    unmarkRepositionTargets();
 }
 
 function completeReposition(dstPath) {
@@ -63,10 +91,7 @@ function completeReposition(dstPath) {
     browser.runtime.sendMessage(uiMessage);
 
     moving.classList.remove(REPOSITION_ELEMENT_MARKER);
-    const targets = [...document.querySelectorAll(SEPARATOR_CLASS)];
-    targets.forEach((item) => {
-        item.classList.remove(REPOSITION_ACTIVE_MARKER);
-    });
+    unmarkRepositionTargets();
 }
 
 /* **************************** *
@@ -99,7 +124,10 @@ function markDragNesting(mouseX) {
 
 function markDragTarget(mouseY, depthClass) {
     const classTarget = `${SEPARATOR_CLASS}${depthClass}`;
-    const targets = [...document.querySelectorAll(classTarget)];
+    const draggedItem = document.querySelector(`.${REPOSITION_ELEMENT_MARKER}`);
+    const pathClassName = getClassName(draggedItem, NODE_PATH_CLASSNAME);
+    const descendantSelector = `[class^='${pathClassName}'], [class*=' ${pathClassName}']`;
+    const targets = [...document.querySelectorAll(`${classTarget}:not(${descendantSelector})`)];
     // const targets = [...document.querySelectorAll(`${DIVIDER_CLASS}:not(.${DRAG_MARKER})`)];
 
     const dragTarget = targets.reduce((closest, target) => {
@@ -142,13 +170,14 @@ function dragOver(event) {
 function dragEnd(event) {
     const targetDepthClass = markDragNesting(event.clientX);
     const target = markDragTarget(event.clientY, targetDepthClass);
-    const draggedItem = document.querySelector(`.${REPOSITION_ELEMENT_MARKER}`);
-    
-    const srcPath = parsePath(draggedItem);
-    const dstPath = parsePath(target);
 
-    const uiMessage = buildUISwapMessage(srcPath, dstPath);
-    browser.runtime.sendMessage(uiMessage);
+    if(target !== null) {
+        const srcPath = parsePath(event.target);
+        const dstPath = parsePath(target);
+
+        const uiMessage = buildUISwapMessage(srcPath, dstPath);
+        browser.runtime.sendMessage(uiMessage);
+    }
 
     event.target.classList.remove(REPOSITION_ELEMENT_MARKER);
     clearDragTargetMarkers();
@@ -184,9 +213,16 @@ function NodeButtonBar({isRoot=false, nodePath, nodePathClassName}) {
         );
     }
 
+    const unpromptReposition = () => {
+        cancelReposition();
+        promptDispatch(PROMPT_DEACTIVATE);
+    }
+
     const repositionNode = () => {
+        const cancelButton = <ButtonCancel onClick={unpromptReposition}>Cancel</ButtonCancel>;
+        const movePrompt = { active: true, prompt: "Move to where?", buttons: [cancelButton] };
         beginReposition(nodePathClassName);
-        promptDispatch(PROMPT_MOVE);
+        promptDispatch(movePrompt);
     }
 
     return <div className="buttonBar">
@@ -211,10 +247,9 @@ function BunnyNode({data, nodePath=[]}) {
     // Precomputation
     const depth = nodePath.length;
     const isRoot = depth === 0;
-    const depthClassName = `${NODE_DEPTH_CLASSNAME}${depth}`;
+    const depthClassName = buildNodeDepthClassName(nodePath);
     const nodeRef = useRef(null);
-    const pathString = nodePath.join(NODE_PATH_DELIMETER);
-    const nodePathClassName = `${NODE_PATH_CLASSNAME}${pathString}`;
+    const nodePathClassName = buildNodePathClassName(nodePath);
 
     // Subscribe to relevant contexts
     const { promptDispatch } = usePrompts();
@@ -224,10 +259,6 @@ function BunnyNode({data, nodePath=[]}) {
         completeReposition(nodePath);
         promptDispatch(PROMPT_DEACTIVATE)
     }
-
-    const unpromptReposition = () => {
-        unmarkRepositionTargets();
-    }    
 
     // Build React component
     const node = <div className="bunnyNode">        
@@ -263,7 +294,7 @@ function BunnyHole({data, nodePath=[]}) {
     const depth = nodePath.length;
     const isRoot = depth === 0;
     const indent = `${Math.max(depth - 1, 0) * 24}px`;
-    const depthClass = `${NODE_DEPTH_CLASSNAME}${depth}`;
+    const depthClassName = buildNodeDepthClassName(nodePath);
 
     // Define SVG filters for the BunnyHole
     const svgFilters = isRoot ? <svg className="svgFilters" xmlns="http://www.w3.org/2000/svg" version="1.1">
@@ -285,7 +316,7 @@ function BunnyHole({data, nodePath=[]}) {
     // TODO: Seems like the full hole is re-rendered each time. Is there a way to prevent that with React?
     const bunnyHole = <div className="bunnyHole" style={{marginLeft: indent}}>
         {svgFilters}
-        <div className={`nestMarker ${depthClass}`}></div>
+        <div className={`nestMarker ${depthClassName}`}></div>
         <div className="content">
             <BunnyNode data={data} nodePath={nodePath} />
             {

@@ -5,20 +5,32 @@ import "./button.css";
 /* ********* *
  * CONSTANTS *
  *************/
+
+// CLASS SPECIFIERS
 const BUTTON_CLASS_NAME = "bhButton";
-const STANDARD_CLASS_NAME = `${BUTTON_CLASS_NAME} standard`;
-const DANGEROUS_CLASS_NAME = `${BUTTON_CLASS_NAME} dangerous`;
+const ButtonType = Object.freeze({
+    STANDARD: "standard",
+    DANGEROUS: "dangerous"
+});
 
-function Button({ children, onClick = null }) {        
-    return <button onClick={onClick}>{children}</button>
+export { ButtonType };
+
+/* **************** *
+ * REACT COMPONENTS *
+ ********************/
+
+function ButtonConfirm({children, onClick = null}) {
+    return <Button onClick={onClick} buttonType={ButtonType.STANDARD}>{children}</Button>;
 }
 
-function ButtonStandard( { children, onClick = null} ) {
-    return <Button className={STANDARD_CLASS_NAME} onClick={onClick}>{children}</Button>
+function ButtonCancel({children, onClick = null}) {
+    return <Button onClick={onClick} buttonType={ButtonType.DANGEROUS}>{children}</Button>;
 }
 
-function ButtonDangerous() { children, onClick = null }{
-    return <Button className={DANGEROUS_CLASS_NAME} onClick={onClick}>{children}</Button>
+function Button({ children, buttonType=ButtonType.STANDARD, onClick = null }) {    
+    const className = `${BUTTON_CLASS_NAME} ${buttonType}`;    
+    return <button onClick={onClick} className={className}>{children}</button>
 }
 
-export { ButtonStandard, ButtonDangerous };
+export default Button;
+export { ButtonConfirm, ButtonCancel };

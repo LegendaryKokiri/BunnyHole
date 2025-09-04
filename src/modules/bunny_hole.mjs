@@ -149,6 +149,22 @@ class BunnyHole {
      * @returns 
      */
     repositionNode(srcPath, dstPath, after) {
+        // Verify that the destination path is not a child of the source path
+        if(dstPath.length >= srcPath.length) {
+            let dstIsDescendant = true;
+            for(let i = 0; i < srcPath.length; i++) {
+                if(srcPath[i] != dstPath[i]) {
+                    dstIsDescendant = false;
+                    break;
+                }
+            }
+
+            if(dstIsDescendant) {
+                console.error("Cannot move a node into one of its own descendants.")
+                return;
+            }
+        }
+
         // Find the source node
         const srcNode = this.getNode(srcPath);
         if(isUndefined(srcNode.#parent)) {
@@ -184,6 +200,7 @@ class BunnyHole {
     insertChild(sourceNode, destNode, after) {
         const destIndex = this.#children.indexOf(destNode);
         const addIndex = after ? destIndex + 1 : destIndex;
+        sourceNode.#parent = this; // TODO: Properly update the parent
         this.#children.splice(addIndex, 0, sourceNode);
         this.#jsObject.children.splice(addIndex, 0, sourceNode.jsObject);
     }

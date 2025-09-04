@@ -8,11 +8,12 @@ import "./promptbox.css";
  *************/
 
 // PROMPTS
-const PROMPT_DEACTIVATE = { active: false, prompt: "" };
-const PROMPT_MOVE = { active: true, prompt: "Move to where?" };
+const PROMPT_DEACTIVATE = { active: false, prompt: "", buttons: [] };
 
 // ERROR_MESSAGES
 const ERROR_CONTEXT = "No context found. PromptBox must be initialized within a PromptProvider JSX element.";
+
+export { PROMPT_DEACTIVATE };
 
 /* *********************** *
  * PROMPT STATE MANAGEMENT *
@@ -58,8 +59,11 @@ function PromptBox() {
 
     return <div className={className}>
         {prompt.prompt}
+        {
+            prompt.buttons &&
+            prompt.buttons.map((item) => item)
+        }
     </div>
 }
 
 export default PromptBox;
-export { PROMPT_DEACTIVATE, PROMPT_MOVE };

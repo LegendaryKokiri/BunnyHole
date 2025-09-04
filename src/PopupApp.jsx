@@ -17,9 +17,9 @@ function PopupApp() {
         <div>
             <div className="popupMenu">
                 <h1>Bunny Hole</h1>
-                <Button text="Create Bunny Hole" onClick={createNew}/>
-                <Button text="Load Bunny Hole" />
-                <Button text="Exit" type={ButtonType.DANGEROUS}/>
+                <Button onClick={createNew}>Create Bunny Hole</Button>
+                <Button>Load Bunny Hole</Button>
+                <Button buttonType={ButtonType.DANGEROUS}>Exit</Button>
             </div>
         </div>
     )

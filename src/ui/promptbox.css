@@ -22,6 +22,5 @@
 }
 
 .promptBox.active {
-    background-color: #3fbf94;
     transform: translateY(0%);
 }
