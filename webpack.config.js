@@ -77,6 +77,9 @@ sidebar = {
 };
 
 // The first bundle should clear the dist directory
+cleanup = { output: { clean: true } };
 // popup.output = {...popup.output, clean: true};
+// sidebar.output = {...sidebar.output, clean: true};
 
-module.exports = [ popup, sidebar ];
+// module.exports = [ cleanup ];
+module.exports = [ cleanup, popup, sidebar ];

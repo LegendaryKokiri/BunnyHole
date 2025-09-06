@@ -1,0 +1,40 @@
+:root {
+    --tooltip-width: 100px;
+    --tooltop-margin: calc(var(--tooltip-width) / -2.0);
+}
+
+.tooltip {
+    display: inline-block;
+    position: relative;
+}
+
+.tooltip .text {
+    background-color: #000000;
+    border-radius: 6px;
+    bottom: 100%;
+    color: #eeeeee;
+    font-weight: bold;
+    left: 50%;
+    margin-left: var(--tooltop-margin);
+    padding: 6px 2px;
+    position: absolute;
+    text-align: center;
+    visibility: hidden;
+    width: var(--tooltip-width);
+    z-index: 3;
+}
+
+.tooltip:hover .text {
+    visibility: visible;
+}
+
+.tooltip .text::after {
+    border-width: 5px;
+    border-style: solid;
+    border-color: #000000 transparent transparent transparent;
+    content: "";
+    left: 50%;
+    margin-left: -5px;
+    position: absolute;
+    top: 100%;
+}

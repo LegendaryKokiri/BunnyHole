@@ -114,6 +114,14 @@ class BunnyHole {
         return childNode.getNode(pathToNode.slice(1))
     }
 
+    editNode(pathToNode, title, url) {
+        const node = this.getNode(pathToNode);
+        node.#tab.values = { title: title, url: url };
+        node.#jsObject.title = title;
+        node.#jsObject.url = url;
+        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+    }
+
     deleteNode(pathToNode) {
         if(pathToNode.length === 0) return;
 

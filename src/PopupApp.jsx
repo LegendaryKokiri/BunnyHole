@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom"
 import "./popup.css";
 
-import Button, { ButtonType } from "./ui/input/Button.jsx";
+import Button, { ButtonType } from "./ui/widgets/Button.jsx";
 
 import { buildIOMessage, IOCommands } from "./modules/messages.mjs";
 

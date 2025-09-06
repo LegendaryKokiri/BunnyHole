@@ -16,22 +16,31 @@ export const IOCommands = Object.freeze({
 });
 
 export const UICommands = Object.freeze({
-    SWAP_BH_NODES:   2001,
-    DELETE_BH_NODE:  2002
+    EDIT_BH_NODE:    2001,
+    SWAP_BH_NODES:   2002,
+    DELETE_BH_NODE:  2003
 });
 
 export function buildBHMessage(bunnyHoleJsObj) {
     return {
         type: MessageTypes.BH,
         content: bunnyHoleJsObj
-    }
+    };
 }
 
 export function buildIOMessage(ioCommand) {
     return {
         type: MessageTypes.IO,
         command: ioCommand
-    }
+    };
+}
+
+export function buildUIEditMessage(path, title, url) {
+    return {
+        type: MessageTypes.UI,
+        command: UICommands.EDIT_BH_NODE,
+        content: {path: path, title: title, url: url}
+    };
 }
 
 export function buildUIDeleteMessage(path) {
@@ -39,7 +48,7 @@ export function buildUIDeleteMessage(path) {
         type: MessageTypes.UI,
         command: UICommands.DELETE_BH_NODE,
         content: {path: path}
-    }
+    };
 }
 
 export function buildUISwapMessage(srcPath, dstPath) {
@@ -52,7 +61,7 @@ export function buildUISwapMessage(srcPath, dstPath) {
         type: MessageTypes.UI,
         command: UICommands.SWAP_BH_NODES,
         content: msgContent
-    }
+    };
 }
 
 export function validateMessage(message, targetType) {

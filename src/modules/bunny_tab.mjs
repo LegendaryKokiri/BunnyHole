@@ -21,6 +21,14 @@ class BunnyTab {
         return this.#url;
     }
 
+    /**
+     * @param {{ title: string; url: string; }} valueObj
+     */
+    set values(valueObj) {
+        this.#title = valueObj.title;
+        this.#url = valueObj.url;
+    }
+
     toString() {
         return `[BunnyTab "${this.#title}"]`
     }

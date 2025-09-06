@@ -5,6 +5,8 @@ import "./sidebar.css";
 import { MessageTypes } from "./modules/messages.mjs";
 import Toolbar from "./ui/Toolbar.jsx";
 import PromptBox, {PromptProvider} from "./ui/PromptBox.jsx";
+import NodeEditBox, { NodeEditProvider } from "./ui/NodeEditBox.jsx";
+import Modal from "./ui/widgets/Modal.jsx";
 
 function SidebarApp() {
     const [bunnyHole, setBunnyHole] = useState(new BunnyHoleClass().jsObject);
@@ -23,11 +25,14 @@ function SidebarApp() {
 
     return (
         <div>
+            <NodeEditProvider>
             <PromptProvider>
                 <Toolbar />
+                <NodeEditBox />
                 <BunnyHole data={bunnyHole}/>
                 <PromptBox />
             </PromptProvider>
+            </NodeEditProvider>
         </div>
     )
 }

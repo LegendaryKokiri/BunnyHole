@@ -1,0 +1,12 @@
+:root {
+    --modal-backdrop-color: #00dd0080;
+}
+
+dialog {
+    border: none;
+    background: none;
+}
+
+dialog::backdrop {
+    background-color: var(--modal-backdrop-color);
+}

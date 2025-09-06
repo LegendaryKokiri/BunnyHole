@@ -3,7 +3,9 @@ import ReactDOM from "react-dom";
 import { buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
 import "./bunnyhole.css";
 import { usePrompts, PROMPT_DEACTIVATE, PROMPT_MOVE } from "./PromptBox.jsx";
-import Button, { ButtonCancel } from "./input/Button.jsx";
+import Button, { ButtonCancel } from "./widgets/Button.jsx";
+import Tooltip from "./widgets/Tooltip.jsx";
+import { useNodeEdits } from "./NodeEditBox.jsx";
 
 /* ********* *
  * CONSTANTS *
@@ -15,8 +17,8 @@ const BUTTON_IMG_EXTENSION = ".png";
 
 // CLASS SELECTORS
 const NEST_CLASS = ".bunnyHole > .nestMarker";
-const DIVIDER_CLASS = ".bunnyNode .divider";
 const SEPARATOR_CLASS = ".nodeSeparator";
+const NODE_EDIT_CLASS = ".nodeEditModal";
 
 // STATIC CLASS NAME BUILDING BLOCKS
 const NODE_DEPTH_CLASSNAME = "nodeDepth";
@@ -187,11 +189,23 @@ function dragEnd(event) {
  * REACT COMPONENTS *
  ********************/
 
-function NodeButton({handleClick, buttonClassName="nodeButton", buttonFileName, filterName="controlMask"}) {
+function NodeButton({handleClick, buttonFileName, buttonClassName="nodeButton", filterName="controlMask", tooltipText=""}) {
     const buttonPath = `${BUTTON_IMG_PATH}${buttonFileName}${BUTTON_IMG_EXTENSION}`;
-    return <svg onClick={handleClick} className={buttonClassName} xmlns="http://www.w3.org/2000/svg" version="1.1" width="24" height="24">
+    
+    const svg = <svg
+        onClick={handleClick}
+        className={buttonClassName}
+        xmlns="http://www.w3.org/2000/svg"
+        version="1.1"
+        width="24"
+        height="24"
+    >
         <image width="100%" height="100%" href={buttonPath} filter={`url(#${filterName})`} />
     </svg>
+
+    const tooltip = tooltipText === "" ? svg : <Tooltip text={tooltipText}>{svg}</Tooltip>
+
+    return tooltip
 }
 
 
@@ -200,13 +214,22 @@ function NodeTitle({children, isRoot=false}) {
     return <p className="title">{children}</p>;
 }
 
-function NodeButtonBar({isRoot=false, nodePath, nodePathClassName}) {
+function NodeButtonBar({isRoot=false, data, nodePath, nodePathClassName}) {
     if(isRoot) return <></>;
 
     // Subscribe to relevant contexts
+    const { nodeEditDispatch } = useNodeEdits();
     const { promptDispatch } = usePrompts();
 
     // Declare event handlers
+    const editNode = () => {
+        console.log(`NodeButtonBar.editNode(): Dispatching with nodePath`);
+        console.log(nodePath);
+        nodeEditDispatch({ path: nodePath, title: data.title, url: data.url });
+        const modal = document.querySelector(NODE_EDIT_CLASS); // TODO: Use a constant instead of a string literal
+        modal.showModal();
+    }
+
     const deleteNode = () => {
         browser.runtime.sendMessage(
             buildUIDeleteMessage(nodePath)
@@ -218,16 +241,18 @@ function NodeButtonBar({isRoot=false, nodePath, nodePathClassName}) {
         promptDispatch(PROMPT_DEACTIVATE);
     }
 
-    const repositionNode = () => {
+    const promptReposition = () => {
         const cancelButton = <ButtonCancel onClick={unpromptReposition}>Cancel</ButtonCancel>;
         const movePrompt = { active: true, prompt: "Move to where?", buttons: [cancelButton] };
         beginReposition(nodePathClassName);
         promptDispatch(movePrompt);
     }
 
+    // TODO: Standardize user-facing language around "nodes"
     return <div className="buttonBar">
-        <NodeButton handleClick={deleteNode} buttonFileName={"button-delete"} filterName={"dangerMask"}></NodeButton>
-        <NodeButton handleClick={repositionNode} buttonFileName={"button-reposition"}></NodeButton>
+        <NodeButton handleClick={editNode} buttonFileName={"button-edit"} tooltipText="Edit" />
+        <NodeButton handleClick={promptReposition} buttonFileName={"button-reposition"} tooltipText="Move" />
+        <NodeButton handleClick={deleteNode} buttonFileName={"button-delete"} filterName={"dangerMask"} tooltipText="Delete" />
     </div>
 }
 
@@ -265,7 +290,7 @@ function BunnyNode({data, nodePath=[]}) {
         <div className={`body ${nodePathClassName}`} ref={nodeRef} draggable="true"> 
             <div className="heading">
                 <NodeTitle isRoot={isRoot}>{data.title}</NodeTitle>
-                <NodeButtonBar isRoot={isRoot} nodePath={nodePath} nodePathClassName={nodePathClassName} />
+                <NodeButtonBar isRoot={isRoot} data={data} nodePath={nodePath} nodePathClassName={nodePathClassName} />
             </div>
             <NodeURL isRoot={isRoot}>{data.url}</NodeURL>
             <textarea className="input" name="Notes" rows="4" cols="88"></textarea>
@@ -275,14 +300,12 @@ function BunnyNode({data, nodePath=[]}) {
     
     // Initialize per-node drag listeners on non-root nodes
     useEffect(() => {
-        if(isRoot) return;
-
+        if(isRoot || !nodeRef.current) return;
         nodeRef.current.addEventListener("dragstart", dragStart);
 
         return () => {
-            if(nodeRef.current) {
-                nodeRef.current.removeEventListener("dragstart", dragStart);
-            }
+            if(!nodeRef.current) return;
+            nodeRef.current.removeEventListener("dragstart", dragStart);
         }
     })
 

@@ -83,10 +83,17 @@ class BunnyHoleIO {
 
     #handleUIMessage(message) {
         switch(message.command) {
+            case UICommands.EDIT_BH_NODE:
+                this.#currentBunnyHole.editNode(
+                    message.content.path,
+                    message.content.title,
+                    message.content.url
+                );
+                break;
             case UICommands.DELETE_BH_NODE:
                 this.#currentBunnyHole.deleteNode(
                     message.content.path
-                )
+                );
                 break;
             case UICommands.SWAP_BH_NODES:
                 this.#currentBunnyHole.repositionNode(

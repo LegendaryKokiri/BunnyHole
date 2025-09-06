@@ -10,7 +10,7 @@ import "./promptbox.css";
 // PROMPTS
 const PROMPT_DEACTIVATE = { active: false, prompt: "", buttons: [] };
 
-// ERROR_MESSAGES
+// ERROR MESSAGES
 const ERROR_CONTEXT = "No context found. PromptBox must be initialized within a PromptProvider JSX element.";
 
 export { PROMPT_DEACTIVATE };

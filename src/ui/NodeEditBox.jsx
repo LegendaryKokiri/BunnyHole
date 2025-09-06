@@ -1,0 +1,99 @@
+import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import ReactDOM from "react-dom";
+import "./nodeeditbox.css";
+
+import Button, { ButtonType } from "./widgets/Button.jsx";
+import Modal from "./widgets/Modal.jsx";
+import { buildUIEditMessage } from "../modules/messages.mjs";
+
+/* ********* *
+ * CONSTANTS *
+ *************/
+
+// EDIT OBJECT
+const EMPTY_EDIT = { path: [], title: "", url: "" };
+
+// ERROR MESSAGES
+const ERROR_CONTEXT = "No context found. NodeEditBox must be initialized within a NodeEditProvider JSX element.";
+
+/* ************************** *
+ * NODE EDIT STATE MANAGEMENT *
+ ******************************/
+
+const NodeEditContext = createContext(EMPTY_EDIT);
+
+// TODO: I'm not convinced a full-on reducer is necessary.
+// This this really is just setting state.
+// Is there another way to set up the provider?
+// Maybe setState in itself would do.
+function nodeEditReducer(_state, action) {
+    return action;
+}
+
+function NodeEditProvider({ children }) {
+    const [ nodeEdit, nodeEditDispatch ] = useReducer(nodeEditReducer, EMPTY_EDIT);
+    return <NodeEditContext.Provider value={{nodeEdit, nodeEditDispatch}}>
+        {children}
+    </NodeEditContext.Provider>
+}
+
+function useNodeEdits() {
+    const nodeEditContext = useContext(NodeEditContext);
+    if(!nodeEditContext) throw new Error(ERROR_CONTEXT);
+    return nodeEditContext;
+}
+
+export { NodeEditContext, NodeEditProvider, useNodeEdits };
+
+/* *************** *
+ * REACT COMPONENT *
+ *******************/
+
+function NodeEditBox() {
+    // Declare DOM refs
+    const titleRef = useRef(null);
+    const urlRef = useRef(null);
+
+    // Subscribe to context
+    const { nodeEdit } = useNodeEdits();
+
+    // Declare event handlers
+    const handleConfirmClick = () => {
+        if(!titleRef.current) return;
+        if(!urlRef.current) return;
+
+        const path = nodeEdit.path;
+        const title = titleRef.current.value;
+        const url = urlRef.current.value;
+        const message = buildUIEditMessage(path, title, url);
+        console.log("NodeEditBox.handleConfirmClick(): Built message");
+        browser.runtime.sendMessage(message);
+    }
+
+    // Build React component
+    const nodeEditForm = <Modal className={"nodeEditModal"}>
+        <form className="nodeEditBox" method="dialog">
+            <div className="nodeEditRow">
+                {/* TODO: Make consistent with user-facing terminology around nodes */}
+                <p>Edit Node</p> 
+            </div>
+            <div className="nodeEditRow">
+                <p>Title:</p>
+                <input type="text" className="editTitle" defaultValue={nodeEdit.title} ref={titleRef} autoFocus />
+            </div>
+            <div className="nodeEditRow">
+                <p>URL:</p>
+                <input type="text" className="editURL" defaultValue={nodeEdit.url} ref={urlRef} />
+            </div>
+            <div className="nodeEditRow">
+                {/* Confirm must be the first button to automatically respond to an "Enter" press */}
+                <Button onClick={handleConfirmClick}>Confirm</Button>
+                <Button buttonType={ButtonType.DANGEROUS}>Cancel</Button>
+            </div>  
+        </form>
+    </Modal>
+
+    return nodeEditForm;
+}
+
+export default NodeEditBox;
