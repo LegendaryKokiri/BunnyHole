@@ -1,6 +1,7 @@
 import BunnyTab from "../modules/bunny_tab.mjs";
 import BunnyHole from "../modules/bunny_hole.mjs";
 import { isUndefined } from "../modules/utils.mjs";
+import { MessageTypes, UICommands } from "../modules/messages.mjs";
 
 class WebTracker {
 
@@ -17,6 +18,8 @@ class WebTracker {
     #beforeHandler = undefined;
     #completedHandler = undefined;
 
+    #messageHandler = undefined;
+
     constructor() {
         this.#tabMap = new Map();
 
@@ -27,6 +30,8 @@ class WebTracker {
         this.#createdHandler = this.#handleWebNavCreatedNavigationTarget.bind(this);
         this.#beforeHandler = this.#handleWebNavBeforeNavigate.bind(this);
         this.#completedHandler = this.#handleWebNavCompleted.bind(this);
+
+        this.#messageHandler = this.#handleMessage.bind(this);
     }
 
     /**
@@ -77,6 +82,8 @@ class WebTracker {
         browser.webNavigation.onCreatedNavigationTarget.addListener(this.#createdHandler);
         browser.webNavigation.onBeforeNavigate.addListener(this.#beforeHandler);
         browser.webNavigation.onCompleted.addListener(this.#completedHandler);
+
+        browser.runtime.onMessage.addListener(this.#messageHandler);
     }
 
     /**
@@ -90,6 +97,8 @@ class WebTracker {
         browser.webNavigation.onCreatedNavigationTarget.removeListener(this.#createdHandler);
         browser.webNavigation.onBeforeNavigate.removeListener(this.#beforeHandler);
         browser.webNavigation.onCompleted.removeListener(this.#completedHandler);
+
+        browser.runtime.onMessage.removeListener(this.#messageHandler);
     }
 
     /**
@@ -217,6 +226,28 @@ class WebTracker {
                 console.error(error);
             }
         );
+    }
+
+    #handleMessage(message) {
+        if(!message.type === MessageTypes.UI) return;
+        switch(message.command) {
+            case UICommands.ADD_BH_NODE:
+                browser.tabs.query({active: true}).then(
+                    (allTabs) => {
+                        for(const tab of allTabs) {
+                            const bunnyTab = this.#tabMap.get(tab.id);
+                            this.#bunnyHole.placeNode(bunnyTab, message.content.path, true);
+                            break;
+                        }
+                    },
+                    (error) => {
+                        console.error(error);
+                    }
+                );
+                break;
+            default:
+                break;
+        }
     }
 
 }

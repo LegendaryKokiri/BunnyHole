@@ -5,7 +5,7 @@
 
 	"description": "Go down a rabbit hole with Bunny Hole",
 
-	"permissions": ["tabs", "webNavigation", "notifications"],
+	"permissions": ["tabs", "webNavigation", "notifications", "storage"],
 
 	"icons": {
 		"48": "icons/icon-48.png",

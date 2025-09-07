@@ -66,7 +66,6 @@ function NodeEditBox() {
         const title = titleRef.current.value;
         const url = urlRef.current.value;
         const message = buildUIEditMessage(path, title, url);
-        console.log("NodeEditBox.handleConfirmClick(): Built message");
         browser.runtime.sendMessage(message);
     }
 
@@ -77,6 +76,7 @@ function NodeEditBox() {
                 {/* TODO: Make consistent with user-facing terminology around nodes */}
                 <p>Edit Node</p> 
             </div>
+            {/* TODO: defaultValue for the button should be reflected every time the dialog opens */}
             <div className="nodeEditRow">
                 <p>Title:</p>
                 <input type="text" className="editTitle" defaultValue={nodeEdit.title} ref={titleRef} autoFocus />
@@ -86,7 +86,7 @@ function NodeEditBox() {
                 <input type="text" className="editURL" defaultValue={nodeEdit.url} ref={urlRef} />
             </div>
             <div className="nodeEditRow">
-                {/* Confirm must be the first button to automatically respond to an "Enter" press */}
+                {/* Note: Confirm MUST be the first button to automatically respond to an "Enter" press */}
                 <Button onClick={handleConfirmClick}>Confirm</Button>
                 <Button buttonType={ButtonType.DANGEROUS}>Cancel</Button>
             </div>  

@@ -8,6 +8,7 @@ const ROOT_NODE_URL = "<No URL>";
 
 const JS_OBJ_ALL_KEYS = ["title", "url", "reactKey", "children"];
 
+// TODO: Broadly, this module could use a cleaner definition of when to send browser messages.
 class BunnyHole {
     // INTERNAL STATE
     #tab = new BunnyTab(ROOT_NODE_ID, ROOT_NODE_TITLE, ROOT_NODE_URL);
@@ -82,30 +83,26 @@ class BunnyHole {
      */
     createNode(bunnyTab, parentUrl = undefined, useRootIfOrphan = false) {
         // If the target URL already exists, don't make a new one.
-        // TODO (Post-V0) Add a user option to link to the existing node in a new parent--> child relationship instead of ignoring it
+        console.log(`Placing ${bunnyTab.toString()} under ${parentUrl}`);
         if(!isUndefined(this.searchByUrl(bunnyTab))) return;
 
         let parentNode = isUndefined(parentUrl)
             ? this
             : this.searchByUrl(new BunnyTab(-1, "<Search Node>", parentUrl));
         if(isUndefined(parentNode)) {
-            if(useRootIfOrphan) {
-                parentNode = this;
-            } else {
+            if(!useRootIfOrphan) {
                 console.error(`BunnyHole.createNode(): Search for ${parentUrl} failed`);
                 return;
             }
+
+            parentNode = this;
         }
 
-        const newNode = new BunnyHole(bunnyTab.title, bunnyTab.url);
-        newNode.#tab = bunnyTab;
-        newNode.#parent = parentNode;
+        const parentParent = isUndefined(parentNode.#parent) ? "undefined" : parentNode.#parent.toString();
+        console.log(`Parent Node: ${parentNode.#tab.toString()}, child of ${parentParent}`);
 
-        const addIndex = parentNode.#children.length;
-        parentNode.#children[addIndex] = newNode;
-        parentNode.#jsObject.children[addIndex] = newNode.#jsObject;
-
-        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+        parentNode.#addDirectDescendant(bunnyTab);
+        this.reportChange();
     }
 
     getNode(pathToNode) {
@@ -114,12 +111,30 @@ class BunnyHole {
         return childNode.getNode(pathToNode.slice(1))
     }
 
+    placeNode(bunnyTab, pathToNode, after) {
+        const parentNode = this.getNode(pathToNode.slice(0, pathToNode.length - 1));
+        let addIndex = pathToNode[pathToNode.length - 1];
+        addIndex = after ? addIndex + 1 : after;
+        parentNode.#addDirectDescendant(bunnyTab, addIndex);
+        this.reportChange();
+    }
+
+    #addDirectDescendant(bunnyTab, addIndex=-1) {
+        const newNode = new BunnyHole(bunnyTab.title, bunnyTab.url);
+        newNode.#tab = bunnyTab;
+        newNode.#parent = this;
+
+        const index = addIndex === -1 ? this.#children.length : addIndex;
+        this.#children.splice(index, 0, newNode); // TODO: This is reusing code from insertChild(). Refactoring may be good.
+        this.#jsObject.children.splice(index, 0, newNode.jsObject);
+    }
+
     editNode(pathToNode, title, url) {
         const node = this.getNode(pathToNode);
         node.#tab.values = { title: title, url: url };
         node.#jsObject.title = title;
         node.#jsObject.url = url;
-        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+        this.reportChange();
     }
 
     deleteNode(pathToNode) {
@@ -130,15 +145,13 @@ class BunnyHole {
 
         for(let i = 0; i < n - 1; i++) {
             deleteParent = deleteParent.#children[pathToNode[i]];
-            console.log("BunnyHole.deleteNode(): Drilling down to %s", deleteParent);
         }
 
-        console.log("Deleting index %d of %s", pathToNode[n - 1], deleteParent.#children);
         deleteParent.#children.splice(pathToNode[n - 1], 1);
         deleteParent.#jsObject.children.splice(pathToNode[n - 1], 1);
 
         // Report change
-        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
+        this.reportChange();
     }
 
     /**
@@ -194,7 +207,6 @@ class BunnyHole {
         dstNode.#parent.insertChild(srcNode, dstNode, after)
 
         // Report change
-        browser.runtime.sendMessage(buildBHMessage(this.#jsObject));
     }
 
     // TODO: The only reason that removeChild() wasn't made private was to ease implementation. Could we rectify this?
@@ -202,6 +214,14 @@ class BunnyHole {
         const sourceIndex = this.#children.indexOf(sourceNode);
         this.#children.splice(sourceIndex, 1);
         this.#jsObject.children.splice(sourceIndex, 1);
+    }
+
+    reportChange() {
+        browser.storage.local.set({ bunnyHole: this.#jsObject }).then(
+            () => console.log("Saved Bunny Hole!")
+        );
+        const message = buildBHMessage(this.#jsObject);
+        browser.runtime.sendMessage(message);
     }
 
     // TODO: The only reason that insertChild() wasn't made private was to ease implementation. Could we rectify this?

@@ -5,7 +5,6 @@ import { IOCommands, MessageTypes, UICommands } from "../modules/messages.mjs";
 class BunnyHoleIO {
     #currentBunnyHole = undefined;
     #messageHandler = undefined;
-
     #ioCallbacks = undefined;
 
     constructor() {
@@ -83,6 +82,9 @@ class BunnyHoleIO {
 
     #handleUIMessage(message) {
         switch(message.command) {
+            case UICommands.ADD_BH_NODE:
+                // Handled in the WebTracker, where tab data is more easily accessible.
+                break;
             case UICommands.EDIT_BH_NODE:
                 this.#currentBunnyHole.editNode(
                     message.content.path,

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import { buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
+import { buildUIAddMessage, buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
 import "./bunnyhole.css";
 import { usePrompts, PROMPT_DEACTIVATE, PROMPT_MOVE } from "./PromptBox.jsx";
 import Button, { ButtonCancel } from "./widgets/Button.jsx";
@@ -209,12 +209,12 @@ function NodeButton({handleClick, buttonFileName, buttonClassName="nodeButton", 
 }
 
 
-function NodeTitle({children, isRoot=false}) {
+function NodeTitle({children, isRoot}) {
     if(isRoot) return <p className="mainTitle">{children}</p>
     return <p className="title">{children}</p>;
 }
 
-function NodeButtonBar({isRoot=false, data, nodePath, nodePathClassName}) {
+function NodeButtonBar({isRoot, data, nodePath, nodePathClassName}) {
     if(isRoot) return <></>;
 
     // Subscribe to relevant contexts
@@ -223,8 +223,6 @@ function NodeButtonBar({isRoot=false, data, nodePath, nodePathClassName}) {
 
     // Declare event handlers
     const editNode = () => {
-        console.log(`NodeButtonBar.editNode(): Dispatching with nodePath`);
-        console.log(nodePath);
         nodeEditDispatch({ path: nodePath, title: data.title, url: data.url });
         const modal = document.querySelector(NODE_EDIT_CLASS); // TODO: Use a constant instead of a string literal
         modal.showModal();
@@ -256,14 +254,32 @@ function NodeButtonBar({isRoot=false, data, nodePath, nodePathClassName}) {
     </div>
 }
 
-function NodeURL({children, isRoot=false}) {
+function NodeURL({children, isRoot}) {
     if(isRoot) return <></>
     return <a className="url">{children}</a>;
 }
 
-function NodeSeparator({handleClick, depthClassName, nodePathClassName}) {
-    return <div onClick={handleClick} className={`nodeSeparator ${depthClassName} ${nodePathClassName}`}>
+function NodeSeparator({isRoot, handleAddClick, handleRepositionClick, depthClassName, nodePathClassName}) {
+    const separatorRef = useRef(null);
+
+    // Create event handlers
+    const handleAdd = () => {
+        // Disable the add button while repositioning nodes
+        if(separatorRef.current.className.includes(REPOSITION_ACTIVE_MARKER)) return;
+        handleAddClick();
+    }
+
+    const handleReposition = () => {
+        // Deactivate the reposition button while not repositioning nodes
+        if(!separatorRef.current.className.includes(REPOSITION_ACTIVE_MARKER)) return;
+        handleRepositionClick();
+    }
+
+    return <div onClick={handleReposition} className={`nodeSeparator ${depthClassName} ${nodePathClassName}`} ref={separatorRef}>
         <NodeButton buttonClassName="repositionButton" buttonFileName="button-reposition-here" />
+        <div className={`divider`}></div>
+        {/* TODO: Once again standardize user-facing language around "Nodes" */}
+        {isRoot ? <></> : <NodeButton handleClick={handleAdd} buttonClassName="addButton" buttonFileName="button-add" tooltipText="Add Here" />}
         <div className={`divider`}></div>
     </div>
 }
@@ -280,6 +296,11 @@ function BunnyNode({data, nodePath=[]}) {
     const { promptDispatch } = usePrompts();
 
     // Declare event handlers
+    const addNode = () => {
+        const message = buildUIAddMessage(nodePath);
+        browser.runtime.sendMessage(message);
+    }
+
     const confirmReposition = () => {
         completeReposition(nodePath);
         promptDispatch(PROMPT_DEACTIVATE)
@@ -294,7 +315,13 @@ function BunnyNode({data, nodePath=[]}) {
             </div>
             <NodeURL isRoot={isRoot}>{data.url}</NodeURL>
             <textarea className="input" name="Notes" rows="4" cols="88"></textarea>
-            <NodeSeparator handleClick={confirmReposition} depthClassName={depthClassName} nodePathClassName={nodePathClassName} />
+            <NodeSeparator
+                isRoot={isRoot}
+                handleAddClick={addNode}
+                handleRepositionClick={confirmReposition}
+                depthClassName={depthClassName}
+                nodePathClassName={nodePathClassName}
+            />
         </div>
     </div>
     
@@ -312,6 +339,7 @@ function BunnyNode({data, nodePath=[]}) {
     return node;
 }
 
+// TODO: nodePath should really be moved into context
 function BunnyHole({data, nodePath=[]}) {
     // Precomputation
     const depth = nodePath.length;

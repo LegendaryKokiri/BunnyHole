@@ -16,9 +16,10 @@ export const IOCommands = Object.freeze({
 });
 
 export const UICommands = Object.freeze({
-    EDIT_BH_NODE:    2001,
-    SWAP_BH_NODES:   2002,
-    DELETE_BH_NODE:  2003
+    ADD_BH_NODE:     2001,
+    EDIT_BH_NODE:    2002,
+    SWAP_BH_NODES:   2003,
+    DELETE_BH_NODE:  2004
 });
 
 export function buildBHMessage(bunnyHoleJsObj) {
@@ -33,6 +34,14 @@ export function buildIOMessage(ioCommand) {
         type: MessageTypes.IO,
         command: ioCommand
     };
+}
+
+export function buildUIAddMessage(path) {
+    return {
+        type: MessageTypes.UI,
+        command: UICommands.ADD_BH_NODE,
+        content: {path: path}
+    }
 }
 
 export function buildUIEditMessage(path, title, url) {
