@@ -22,15 +22,13 @@ class BunnyHole {
 
     constructor(jsObj = undefined) {
         if(isUndefined(jsObj)) {
+            BunnyHole.#reactKey = 1;
             jsObj = this.createJsObject(ROOT_NODE_TITLE, ROOT_NODE_URL);
-        } else {
-            // Keep the react key IDs consistent
-            BunnyHole.#reactKey++;
         }
 
+        BunnyHole.#reactKey = Math.max(BunnyHole.#reactKey, jsObj.reactKey + 1);
+
         this.#tab = new BunnyTab(jsObj.id, jsObj.title, jsObj.url);
-        console.log("Built tab:");
-        console.log(this.#tab);
 
         this.#children = jsObj.children.map(
             (childObj) => {
@@ -224,6 +222,7 @@ class BunnyHole {
         dstNode.#parent.insertChild(srcNode, dstNode, after)
 
         // Report change
+        this.#reportChange();
     }
 
     // TODO: The only reason that removeChild() wasn't made private was to ease implementation. Could we rectify this?
@@ -234,12 +233,7 @@ class BunnyHole {
     }
 
     #reportChange() {
-        console.log("Change reported");
-        console.log(this.#jsObject);
-
-        browser.storage.local.set({ [StorageKeys.BUNNY_HOLE]: this.#jsObject }).then(
-            () => console.log("Saved Bunny Hole!")
-        );
+        browser.storage.local.set({ [StorageKeys.BUNNY_HOLE]: this.#jsObject }).then(() => {});
         const message = buildBHMessage(this.#jsObject);
         browser.runtime.sendMessage(message);
     }

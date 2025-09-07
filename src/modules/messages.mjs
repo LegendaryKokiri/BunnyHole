@@ -9,9 +9,9 @@ export const MessageTypes = Object.freeze({
 
 export const IOCommands = Object.freeze({
     NEW:      1001,
-    SAVE:     1002,
-    OPEN:     1003,
-    LOAD:     1004,
+    OPEN:     1002,
+    LOAD:     1003,
+    SAVE:     1004,
     COMPLETE: 1005
 });
 
@@ -29,11 +29,33 @@ export function buildBHMessage(bunnyHoleJsObj) {
     };
 }
 
-export function buildIOMessage(ioCommand) {
+export function buildIONewMessage() {
     return {
         type: MessageTypes.IO,
-        command: ioCommand
-    };
+        command: IOCommands.NEW
+    }
+}
+
+export function buildIOOpenMessage(file) {
+    return {
+        type: MessageTypes.IO,
+        command: IOCommands.OPEN,
+        content: { file: file }
+    }
+}
+
+export function buildIOLoadMessage() {
+    return {
+        type: MessageTypes.IO,
+        command: IOCommands.LOAD
+    }
+}
+
+export function buildIOSaveMessage() {
+    return {
+        type: MessageTypes.IO,
+        command: IOCommands.SAVE
+    }
 }
 
 export function buildUIAddMessage(path) {

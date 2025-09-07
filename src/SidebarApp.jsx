@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BunnyHoleClass from "./modules/bunny_hole.mjs"
 import BunnyHole from "./ui/BunnyHole.jsx";
 import "./sidebar.css";
-import { buildIOMessage, IOCommands, MessageTypes } from "./modules/messages.mjs";
+import { buildIOLoadMessage, MessageTypes } from "./modules/messages.mjs";
 import Toolbar from "./ui/Toolbar.jsx";
 import PromptBox, {PromptProvider} from "./ui/PromptBox.jsx";
 import NodeEditBox, { NodeEditProvider } from "./ui/NodeEditBox.jsx";
@@ -19,7 +19,7 @@ function SidebarApp() {
     useEffect(() => {
         browser.runtime.onMessage.addListener(handleMessage);
         
-        const message = buildIOMessage(IOCommands.LOAD);
+        const message = buildIOLoadMessage();
         browser.runtime.sendMessage(message);
 
         return () => {

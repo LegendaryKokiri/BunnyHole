@@ -2,6 +2,7 @@ import BunnyTab from "../modules/bunny_tab.mjs";
 import BunnyHole from "../modules/bunny_hole.mjs";
 import { buildBHMessage, IOCommands, MessageTypes, UICommands } from "../modules/messages.mjs";
 import { StorageKeys } from "../modules/storage.mjs";
+import { isUndefined } from "../modules/utils.mjs";
 
 class BunnyHoleIO {
     #currentBunnyHole = undefined;
@@ -71,7 +72,7 @@ class BunnyHoleIO {
                 this.#loadBunnyHole();
                 break;
             case IOCommands.OPEN:
-                this.#openBunnyHole();
+                this.#openBunnyHole(message.content.file);
                 break;
             case IOCommands.SAVE:
                 this.#saveBunnyHole();
@@ -127,7 +128,7 @@ class BunnyHoleIO {
                 const tab = activeTabList[0];
                 const bunnyTab = new BunnyTab(tab.id, tab.title, tab.url);
                 this.#currentBunnyHole = new BunnyHole();
-                this.#currentBunnyHole.createNode(bunnyTab);
+                this.#currentBunnyHole.createNode(bunnyTab); // TODO: In this case, we don't have to make a BunnyHole message and send it because creating the node does it for us. For load and open, we do have to. We should pick one and only one module to be in charge of this. (Probably bunny_hole.mjs)
                 this.#runCallbacks();
             }, 
             (error) => {
@@ -149,12 +150,30 @@ class BunnyHoleIO {
         );
     }
 
-    #openBunnyHole() {
+    #openBunnyHole(file) {
         // TODO: Prompt to save if this.#currentBunnyHole is not undefined
+        const reader = new FileReader();
+
+        reader.addEventListener("load", () => {
+            const contentString = reader.result;
+            console.log(`Read contents: ${contentString}`);
+            const content = JSON.parse(contentString);
+            this.#currentBunnyHole = new BunnyHole(content);
+            this.#runCallbacks();
+            const message = buildBHMessage(this.#currentBunnyHole.jsObject);
+            browser.runtime.sendMessage(message);
+        });
+
+        reader.readAsText(file);
     }
     
     #saveBunnyHole() {
         // TODO: We'll probably have to make a popup
+        if(isUndefined(this.#currentBunnyHole)) return;
+        const bunnyHole = JSON.stringify(this.#currentBunnyHole.jsObject);
+        const blob = new Blob([bunnyHole], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        browser.downloads.download({ url: url, saveAs: true });
     }
     
     #closeBunnyHole() {

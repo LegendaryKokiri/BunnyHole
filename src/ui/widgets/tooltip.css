@@ -5,16 +5,15 @@
 
 .tooltip {
     display: inline-block;
+    font-family: "Helvetica", "Trebuchet MS", sans-serif;
     position: relative;
 }
 
 .tooltip .text {
     background-color: #000000;
     border-radius: 6px;
-    bottom: 100%;
     color: #eeeeee;
     font-weight: bold;
-    left: 50%;
     margin-left: var(--tooltop-margin);
     padding: 6px 2px;
     position: absolute;
@@ -24,11 +23,21 @@
     z-index: 3;
 }
 
+.tooltip.above .text {
+    bottom: 100%;
+    left: 50%;
+}
+
+.tooltip.below .text {
+    top: 100%;
+    left: 50%;
+}
+
 .tooltip:hover .text {
     visibility: visible;
 }
 
-.tooltip .text::after {
+.tooltip.above .text::after {
     border-width: 5px;
     border-style: solid;
     border-color: #000000 transparent transparent transparent;
@@ -37,4 +46,15 @@
     margin-left: -5px;
     position: absolute;
     top: 100%;
+}
+
+.tooltip.below .text::after {
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #000000 transparent;
+    bottom: 100%;
+    content: "";
+    left: 50%;
+    margin-left: -5px;
+    position: absolute;
 }
