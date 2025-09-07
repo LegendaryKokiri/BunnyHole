@@ -1,5 +1,6 @@
 import BunnyTab from "./bunny_tab.mjs";
 import { buildBHMessage } from "./messages.mjs";
+import { StorageKeys } from "./storage.mjs";
 import { isUndefined } from "./utils.mjs";
 
 const ROOT_NODE_ID  = -1;
@@ -19,8 +20,27 @@ class BunnyHole {
     static #reactKey = 1;
     #jsObject = undefined;
 
-    constructor(title = ROOT_NODE_TITLE, url = ROOT_NODE_URL) {
-        this.#jsObject = this.createJsObject(title, url);
+    constructor(jsObj = undefined) {
+        if(isUndefined(jsObj)) {
+            jsObj = this.createJsObject(ROOT_NODE_TITLE, ROOT_NODE_URL);
+        } else {
+            // Keep the react key IDs consistent
+            BunnyHole.#reactKey++;
+        }
+
+        this.#tab = new BunnyTab(jsObj.id, jsObj.title, jsObj.url);
+        console.log("Built tab:");
+        console.log(this.#tab);
+
+        this.#children = jsObj.children.map(
+            (childObj) => {
+                const childNode = new BunnyHole(childObj);
+                childNode.#parent = this;
+                return childNode;
+            }
+        );
+
+        this.#jsObject = jsObj;
     }
 
     get jsObject() {
@@ -83,7 +103,6 @@ class BunnyHole {
      */
     createNode(bunnyTab, parentUrl = undefined, useRootIfOrphan = false) {
         // If the target URL already exists, don't make a new one.
-        console.log(`Placing ${bunnyTab.toString()} under ${parentUrl}`);
         if(!isUndefined(this.searchByUrl(bunnyTab))) return;
 
         let parentNode = isUndefined(parentUrl)
@@ -98,11 +117,8 @@ class BunnyHole {
             parentNode = this;
         }
 
-        const parentParent = isUndefined(parentNode.#parent) ? "undefined" : parentNode.#parent.toString();
-        console.log(`Parent Node: ${parentNode.#tab.toString()}, child of ${parentParent}`);
-
         parentNode.#addDirectDescendant(bunnyTab);
-        this.reportChange();
+        this.#reportChange();
     }
 
     getNode(pathToNode) {
@@ -115,12 +131,13 @@ class BunnyHole {
         const parentNode = this.getNode(pathToNode.slice(0, pathToNode.length - 1));
         let addIndex = pathToNode[pathToNode.length - 1];
         addIndex = after ? addIndex + 1 : after;
-        parentNode.#addDirectDescendant(bunnyTab, addIndex);
-        this.reportChange();
+        parentNode.#addDirectDescendant(bunnyTab, [], addIndex);
+        this.#reportChange();
     }
 
-    #addDirectDescendant(bunnyTab, addIndex=-1) {
-        const newNode = new BunnyHole(bunnyTab.title, bunnyTab.url);
+    #addDirectDescendant(bunnyTab, children=[], addIndex=-1) {
+        const newObj = this.createJsObject(bunnyTab.title, bunnyTab.url, children);
+        const newNode = new BunnyHole(newObj);
         newNode.#tab = bunnyTab;
         newNode.#parent = this;
 
@@ -134,7 +151,7 @@ class BunnyHole {
         node.#tab.values = { title: title, url: url };
         node.#jsObject.title = title;
         node.#jsObject.url = url;
-        this.reportChange();
+        this.#reportChange();
     }
 
     deleteNode(pathToNode) {
@@ -151,7 +168,7 @@ class BunnyHole {
         deleteParent.#jsObject.children.splice(pathToNode[n - 1], 1);
 
         // Report change
-        this.reportChange();
+        this.#reportChange();
     }
 
     /**
@@ -216,8 +233,11 @@ class BunnyHole {
         this.#jsObject.children.splice(sourceIndex, 1);
     }
 
-    reportChange() {
-        browser.storage.local.set({ bunnyHole: this.#jsObject }).then(
+    #reportChange() {
+        console.log("Change reported");
+        console.log(this.#jsObject);
+
+        browser.storage.local.set({ [StorageKeys.BUNNY_HOLE]: this.#jsObject }).then(
             () => console.log("Saved Bunny Hole!")
         );
         const message = buildBHMessage(this.#jsObject);

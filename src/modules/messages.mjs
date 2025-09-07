@@ -10,7 +10,7 @@ export const MessageTypes = Object.freeze({
 export const IOCommands = Object.freeze({
     NEW:      1001,
     SAVE:     1002,
-    LOAD:     1003,
+    OPEN:     1003,
     LOAD:     1004,
     COMPLETE: 1005
 });

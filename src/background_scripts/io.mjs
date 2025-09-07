@@ -1,6 +1,7 @@
 import BunnyTab from "../modules/bunny_tab.mjs";
 import BunnyHole from "../modules/bunny_hole.mjs";
-import { IOCommands, MessageTypes, UICommands } from "../modules/messages.mjs";
+import { buildBHMessage, IOCommands, MessageTypes, UICommands } from "../modules/messages.mjs";
+import { StorageKeys } from "../modules/storage.mjs";
 
 class BunnyHoleIO {
     #currentBunnyHole = undefined;
@@ -69,6 +70,9 @@ class BunnyHoleIO {
             case IOCommands.LOAD:
                 this.#loadBunnyHole();
                 break;
+            case IOCommands.OPEN:
+                this.#openBunnyHole();
+                break;
             case IOCommands.SAVE:
                 this.#saveBunnyHole();
                 break;
@@ -133,6 +137,19 @@ class BunnyHoleIO {
     }
     
     #loadBunnyHole() {
+        // TODO: Prompt to save if this.#currentBunnyHole is not undefined
+        const key = StorageKeys.BUNNY_HOLE;
+        browser.storage.local.get(key).then(
+            (results) => {
+                this.#currentBunnyHole = new BunnyHole(results[key]);
+                this.#runCallbacks();
+                const message = buildBHMessage(this.#currentBunnyHole.jsObject);
+                browser.runtime.sendMessage(message);
+            } 
+        );
+    }
+
+    #openBunnyHole() {
         // TODO: Prompt to save if this.#currentBunnyHole is not undefined
     }
     

@@ -44,7 +44,7 @@ class WebTracker {
     /**
      * Updates this WebTracker in response to an IO event.
      * 
-     * If the BunnyHOle is undefined, disables all listeners for this WebTracker.
+     * If the BunnyHole is undefined, disables all listeners for this WebTracker.
      * Otherwise, reads the contents of all tabs to initialize the tabMap,
      * then enables all listeners for this WebTracker.
      * 
