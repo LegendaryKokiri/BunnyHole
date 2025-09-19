@@ -6,14 +6,18 @@ import { usePrompts, PROMPT_DEACTIVATE, PROMPT_MOVE } from "./PromptBox.jsx";
 import Button, { ButtonCancel } from "./widgets/Button.jsx";
 import Tooltip from "./widgets/Tooltip.jsx";
 import { useNodeEdits } from "./NodeEditBox.jsx";
+import { usePopups } from "./PopupBox.jsx";
 
 /* ********* *
  * CONSTANTS *
  *************/
 
 // FILE I/O
-const BUTTON_IMG_PATH = "./buttons/";
-const BUTTON_IMG_EXTENSION = ".png";
+import BUTTON_ADD        from "../../res/buttons/button-add.png";
+import BUTTON_HERE       from "../../res/buttons/button-here.png";
+import BUTTON_EDIT       from "../../res/buttons/button-edit.png";
+import BUTTON_REPOSITION from "../../res/buttons/button-reposition.png";
+import BUTTON_DELETE     from "../../res/buttons/button-delete.png";
 
 // CLASS SELECTORS
 const NEST_CLASS = ".bunnyHole > .nestMarker";
@@ -189,9 +193,7 @@ function dragEnd(event) {
  * REACT COMPONENTS *
  ********************/
 
-function NodeButton({handleClick, buttonFileName, buttonClassName="nodeButton", filterName="controlMask", tooltipText=""}) {
-    const buttonPath = `${BUTTON_IMG_PATH}${buttonFileName}${BUTTON_IMG_EXTENSION}`;
-    
+function NodeButton({handleClick, href, buttonClassName="nodeButton", filterName="controlMask", tooltipText=""}) {
     const svg = <svg
         onClick={handleClick}
         className={buttonClassName}
@@ -200,7 +202,7 @@ function NodeButton({handleClick, buttonFileName, buttonClassName="nodeButton", 
         width="24"
         height="24"
     >
-        <image width="100%" height="100%" href={buttonPath} filter={`url(#${filterName})`} />
+        <image width="100%" height="100%" href={href} filter={`url(#${filterName})`} />
     </svg>
 
     const tooltip = tooltipText === "" ? svg : <Tooltip text={tooltipText}>{svg}</Tooltip>
@@ -224,7 +226,7 @@ function NodeButtonBar({isRoot, data, nodePath, nodePathClassName}) {
     // Declare event handlers
     const editNode = () => {
         nodeEditDispatch({ path: nodePath, title: data.title, url: data.url });
-        const modal = document.querySelector(NODE_EDIT_CLASS); // TODO: Use a constant instead of a string literal
+        const modal = document.querySelector(NODE_EDIT_CLASS);
         modal.showModal();
     }
 
@@ -248,9 +250,9 @@ function NodeButtonBar({isRoot, data, nodePath, nodePathClassName}) {
 
     // TODO: Standardize user-facing language around "nodes"
     return <div className="buttonBar">
-        <NodeButton handleClick={editNode} buttonFileName={"button-edit"} tooltipText="Edit" />
-        <NodeButton handleClick={promptReposition} buttonFileName={"button-reposition"} tooltipText="Move" />
-        <NodeButton handleClick={deleteNode} buttonFileName={"button-delete"} filterName={"dangerMask"} tooltipText="Delete" />
+        <NodeButton handleClick={editNode} href={BUTTON_EDIT} tooltipText="Edit" />
+        <NodeButton handleClick={promptReposition} href={BUTTON_REPOSITION} tooltipText="Move" />
+        <NodeButton handleClick={deleteNode} href={BUTTON_DELETE} filterName={"dangerMask"} tooltipText="Delete" />
     </div>
 }
 
@@ -276,10 +278,10 @@ function NodeSeparator({isRoot, handleAddClick, handleRepositionClick, depthClas
     }
 
     return <div onClick={handleReposition} className={`nodeSeparator ${depthClassName} ${nodePathClassName}`} ref={separatorRef}>
-        <NodeButton buttonClassName="repositionButton" buttonFileName="button-reposition-here" />
+        <NodeButton href={BUTTON_HERE} buttonClassName="repositionButton" />
         <div className={`divider`}></div>
         {/* TODO: Once again standardize user-facing language around "Nodes" */}
-        {isRoot ? <></> : <NodeButton handleClick={handleAdd} buttonClassName="addButton" buttonFileName="button-add" tooltipText="Add Here" />}
+        {isRoot ? <></> : <NodeButton href={BUTTON_ADD} handleClick={handleAdd} buttonClassName="addButton" tooltipText="Add Here" />}
         <div className={`divider`}></div>
     </div>
 }

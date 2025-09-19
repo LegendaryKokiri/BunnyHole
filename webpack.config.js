@@ -2,12 +2,19 @@ const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
-const DIST_PATH = path.join(__dirname, "/dist");
+const DIST_PATH = path.resolve(__dirname, "dist");
 
-common_config = {
+module.exports = [{
+    entry: {
+        popup: "./src/popup.js",
+        sidebar: "./src/sidebar.js"
+    },
+
     output: {
+        clean: true,
         path: DIST_PATH,
-        filename: "bunny_hole_[name].js",
+        filename: "[name].js",
+        assetModuleFilename: "[path][base]"
     },
 
     module: {
@@ -29,26 +36,34 @@ common_config = {
                 test: /\.css$/,
                 exclude: /node_modules/,
                 use: ["style-loader", "css-loader"]
+            },
+            {
+                test: /\.png$/,
+                include: [path.resolve(__dirname, "res")],
+                type: "asset/resource",
+                generator: {
+                    filename: "[path][base]"
+                }
             }
         ]
-    }
-}
-
-popup = {
-    entry: {
-        "popup": "./src/popup.js",
     },
 
     plugins: [
         new HTMLWebpackPlugin({
             title: "Bunny Hole",
             filename: "./popup.html",
-            template: "./src/popup.html"
+            template: "./src/popup.html",
+            chunks: [ "popup" ]
+        }),
+        new HTMLWebpackPlugin({
+            title: "Bunny Hole",
+            filename: "./sidebar.html",
+            template: "./src/sidebar.html",
+            chunks: [ "sidebar" ]
         }),
         new CopyWebpackPlugin({
             patterns: [
-                { from: "src/icons/", to: "icons/" },
-                { from: "src/buttons/", to: "buttons/" },
+                { from: "res/icons/", to: "res/icons/"},
                 { from: "src/background_scripts/", to: "background_scripts/" },
                 { from: "src/modules", to: "modules/" },
                 { from: "src/options", to: "options/" },
@@ -56,30 +71,4 @@ popup = {
             ]
         })
     ],
-
-    ...common_config,
-};
-
-sidebar = {
-    entry: {
-        "sidebar": "./src/sidebar.js"
-    },
-
-    plugins: [
-        new HTMLWebpackPlugin({
-            title: "Bunny Hole",
-            filename: "./sidebar.html",
-            template: "./src/sidebar.html"
-        })
-    ],
-
-    ...common_config,
-};
-
-// The first bundle should clear the dist directory
-cleanup = { output: { clean: true } };
-// popup.output = {...popup.output, clean: true};
-// sidebar.output = {...sidebar.output, clean: true};
-
-// module.exports = [ cleanup ];
-module.exports = [ cleanup, popup, sidebar ];
+}];

@@ -6,7 +6,7 @@ import { buildIOLoadMessage, MessageTypes } from "./modules/messages.mjs";
 import Toolbar from "./ui/Toolbar.jsx";
 import PromptBox, {PromptProvider} from "./ui/PromptBox.jsx";
 import NodeEditBox, { NodeEditProvider } from "./ui/NodeEditBox.jsx";
-import Modal from "./ui/widgets/Modal.jsx";
+import PopupBox, { PopupProvider } from "./ui/PopupBox.jsx";
 
 function SidebarApp() {
     const [bunnyHole, setBunnyHole] = useState(new BunnyHoleClass().jsObject);
@@ -30,12 +30,15 @@ function SidebarApp() {
     return (
         <div>
             <NodeEditProvider>
+            <PopupProvider>
             <PromptProvider>
                 <Toolbar />
-                <NodeEditBox />
                 <BunnyHole data={bunnyHole}/>
+                <NodeEditBox />
+                <PopupBox />
                 <PromptBox />
             </PromptProvider>
+            </PopupProvider>
             </NodeEditProvider>
         </div>
     )

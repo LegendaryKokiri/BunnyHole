@@ -8,7 +8,8 @@ class WebTracker {
     #bunnyHole = undefined;
     #tabMap = undefined;
     #sourceUrl = undefined; // The id of the tab sourcing new webpages
-    #navInNewTab = false; // Was a new tab created for the current web navigation?
+    #navInNewTab = false;   // Was a new tab created for the current web navigation?
+    #frozen = false;        // Are we currently responding to new webnav events?
 
     #tabCreatedHandler = undefined;
     #tabActivatedHandler = undefined;
@@ -31,7 +32,9 @@ class WebTracker {
         this.#beforeHandler = this.#handleWebNavBeforeNavigate.bind(this);
         this.#completedHandler = this.#handleWebNavCompleted.bind(this);
 
+        // The message handler is never re-added or removed. Hence it is added in the constructor.
         this.#messageHandler = this.#handleMessage.bind(this);
+        browser.runtime.onMessage.addListener(this.#messageHandler);
     }
 
     /**
@@ -82,8 +85,6 @@ class WebTracker {
         browser.webNavigation.onCreatedNavigationTarget.addListener(this.#createdHandler);
         browser.webNavigation.onBeforeNavigate.addListener(this.#beforeHandler);
         browser.webNavigation.onCompleted.addListener(this.#completedHandler);
-
-        browser.runtime.onMessage.addListener(this.#messageHandler);
     }
 
     /**
@@ -97,8 +98,6 @@ class WebTracker {
         browser.webNavigation.onCreatedNavigationTarget.removeListener(this.#createdHandler);
         browser.webNavigation.onBeforeNavigate.removeListener(this.#beforeHandler);
         browser.webNavigation.onCompleted.removeListener(this.#completedHandler);
-
-        browser.runtime.onMessage.removeListener(this.#messageHandler);
     }
 
     /**
@@ -228,11 +227,11 @@ class WebTracker {
         );
     }
 
-    #handleMessage(message) {
+    #handleMessage(message, _sender, sendResponse) {
         if(!message.type === MessageTypes.UI) return;
         switch(message.command) {
             case UICommands.ADD_BH_NODE:
-                browser.tabs.query({active: true}).then(
+                browser.tabs.query({ active: true }).then(
                     (allTabs) => {
                         for(const tab of allTabs) {
                             const bunnyTab = this.#tabMap.get(tab.id);
@@ -245,11 +244,16 @@ class WebTracker {
                     }
                 );
                 break;
+            case UICommands.FREEZE_BH:
+                this.#frozen = !this.#frozen;
+                if(this.#frozen) this.#disableListeners();
+                else this.#enableListeners();
+                sendResponse({ content: this.#frozen }); // TODO: It's a bit of an oddity/violates abstraction to have this be the one message where we send a response. Can we make a more generalizable way to determine which messages get responses and which don't?
+                break;
             default:
                 break;
         }
     }
-
 }
 
 export default WebTracker;

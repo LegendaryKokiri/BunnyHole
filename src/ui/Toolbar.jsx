@@ -1,10 +1,49 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./toolbar.css";
 import Tooltip, { TooltipPosition } from "./widgets/Tooltip.jsx";
-import { buildIONewMessage, buildIOOpenMessage, buildIOSaveMessage, IOCommands } from "../modules/messages.mjs";
+import { buildIONewMessage, buildIOOpenMessage, buildIOSaveMessage, buildUIFreezeMessage } from "../modules/messages.mjs";
+import PopupBox, { usePopups, PopupType } from "./PopupBox.jsx";
 
-function ToolbarButton({ onClick, path, op }) {
+/* ********* *
+ * CONSTANTS *
+ *************/
+
+// FILE I/O
+const BUTTON_IMG_PATH = "../../res/buttons/";
+const BUTTON_IMG_EXTENSION = ".png";
+
+import BUTTON_NEW      from "../../res/buttons/button-new.png";
+import BUTTON_OPEN     from "../../res/buttons/button-open.png";
+import BUTTON_SAVE     from "../../res/buttons/button-save.png";
+import BUTTON_FREEZE   from "../../res/buttons/button-pause.png";
+import BUTTON_UNFREEZE from "../../res/buttons/button-play.png";
+
+// TODO: Is there any way to express these paths in term sof BUTTON_IMG_PATH and BUTTON_IMG_EXTENSION without making Webpack upset?
+// const BUTTON_NEW      = require("../../res/buttons/button-new.png");
+// const BUTTON_OPEN     = require("../../res/buttons/button-open.png");
+// const BUTTON_SAVE     = require("../../res/buttons/button-save.png");
+// const BUTTON_FREEZE   = require("../../res/buttons/button-pause.png");
+// const BUTTON_UNFREEZE = require("../../res/buttons/button-play.png");
+
+// ELEMENT SELECTORS
+const POPUP_CLASS = ".popupModal";
+
+// PROMPT TEXT
+const CONFIRM_NEW_PROMPT = "Any unsaved progress on your current Bunny Hole will be lost. Are you sure?";
+const CONFIRM_OPEN_PROMPT = "Any unsaved progress on your current Bunny Hole will be lost. Are you sure?";
+
+//
+const FREEZE_DISPLAY_OPTIONS = Object.freeze({
+    true: BUTTON_UNFREEZE,
+    false: BUTTON_FREEZE
+});
+
+/* **************** *
+ * REACT COMPONENTS *
+ ********************/
+
+function ToolbarButton({ onClick, href, op, ref=null }) {
     const button = <svg
         onClick={onClick}
         className="toolbarButton"
@@ -13,9 +52,10 @@ function ToolbarButton({ onClick, path, op }) {
         width="32"
         height="32"
     >
-        <image width="100%" height="100%" href={path} filter={`url(#colorMask)`} />
+        <image width="100%" height="100%" href={href} filter={"url(#colorMask)"} ref={ref} />
     </svg>
 
+    // TODO: Use another ref to swap the tooltip on the freeze button, or use a selector on this outer tooltip ref
     const tooltip = <Tooltip text={op} position={TooltipPosition.BELOW}>
         {button}        
     </Tooltip>
@@ -26,15 +66,34 @@ function ToolbarButton({ onClick, path, op }) {
 function Toolbar() {
     // Declare DOM references
     const inputRef = useRef(null);
+    const freezeRef = useRef(null);
+
+    // Subscribe to relevant contexts
+    const { popupDispatch } = usePopups();
 
     // Declare event handlers
+    const displayPrompt = () => {
+        const modal = document.querySelector(POPUP_CLASS);
+        modal.showModal();
+    }
+
     const newFile = () => {
         const message = buildIONewMessage();
         browser.runtime.sendMessage(message);
     }
 
+    const confirmNewFile = () => {
+        popupDispatch({ type: PopupType.CONFIRM, text: CONFIRM_NEW_PROMPT, onConfirm: newFile });
+        displayPrompt();
+    }
+
     const openFile = () => {
         inputRef.current.click();
+    }
+
+    const confirmOpenFile = () => {
+        popupDispatch({ type: PopupType.CONFIRM, text: CONFIRM_OPEN_PROMPT, onConfirm: openFile });
+        displayPrompt();
     }
 
     const fileSelected = () => {
@@ -52,8 +111,15 @@ function Toolbar() {
         browser.runtime.sendMessage(message);
     }
 
-    const close = () => {
-
+    const toggleFreeze = () => {
+        const message = buildUIFreezeMessage();
+        browser.runtime.sendMessage(message).then(
+            (response) => freezeRef.current.setAttribute(
+                "href",
+                FREEZE_DISPLAY_OPTIONS[response.content]
+            ),
+            (error) => console.error(error)
+        );
     }
 
     // Build React component
@@ -75,10 +141,10 @@ function Toolbar() {
             <h2>Bunny Hole</h2>
         </div>
         <div className="buttons">
-            <ToolbarButton onClick={newFile} path="./buttons/button-new.png" op="New File" />
-            <ToolbarButton onClick={openFile} path="./buttons/button-open.png" op="Open File" />
-            <ToolbarButton onClick={saveFile} path="./buttons/button-save.png" op="Save File" />
-            <ToolbarButton path="./buttons/button-delete.png" op="Exit" />
+            <ToolbarButton onClick={confirmNewFile} href={BUTTON_NEW} op="New File" />
+            <ToolbarButton onClick={confirmOpenFile} href={BUTTON_OPEN} op="Open File" />
+            <ToolbarButton onClick={saveFile} href={BUTTON_SAVE} op="Save File" />
+            <ToolbarButton onClick={toggleFreeze} href={BUTTON_FREEZE} op="Freeze" ref={freezeRef} />
         </div>
     </div>
 

@@ -19,7 +19,8 @@ export const UICommands = Object.freeze({
     ADD_BH_NODE:     2001,
     EDIT_BH_NODE:    2002,
     SWAP_BH_NODES:   2003,
-    DELETE_BH_NODE:  2004
+    DELETE_BH_NODE:  2004,
+    FREEZE_BH:       2005
 });
 
 export function buildBHMessage(bunnyHoleJsObj) {
@@ -93,6 +94,13 @@ export function buildUISwapMessage(srcPath, dstPath) {
         command: UICommands.SWAP_BH_NODES,
         content: msgContent
     };
+}
+
+export function buildUIFreezeMessage() {
+    return {
+        type: MessageTypes.UI,
+        command: UICommands.FREEZE_BH,
+    }
 }
 
 export function validateMessage(message, targetType) {

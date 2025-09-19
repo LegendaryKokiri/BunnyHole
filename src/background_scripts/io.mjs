@@ -156,7 +156,6 @@ class BunnyHoleIO {
 
         reader.addEventListener("load", () => {
             const contentString = reader.result;
-            console.log(`Read contents: ${contentString}`);
             const content = JSON.parse(contentString);
             this.#currentBunnyHole = new BunnyHole(content);
             this.#runCallbacks();
