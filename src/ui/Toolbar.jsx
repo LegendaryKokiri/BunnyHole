@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./toolbar.css";
 
@@ -36,7 +36,7 @@ const POPUP_CLASS = ".promptModal"; // TODO Import this from the Prompt class
 const CONFIRM_NEW_PROMPT = "Any unsaved progress on your current Bunny Hole will be lost. Are you sure?";
 const CONFIRM_OPEN_PROMPT = "Any unsaved progress on your current Bunny Hole will be lost. Are you sure?";
 
-//
+// FREEZE BUTTON TOGGLE
 const FREEZE_DISPLAY_OPTIONS = Object.freeze({
     true: BUTTON_UNFREEZE,
     false: BUTTON_FREEZE
@@ -75,31 +75,31 @@ function Toolbar() {
     const { promptDispatch } = usePrompts();
 
     // Declare event handlers
-    const displayPrompt = () => {
+    const displayPrompt = useCallback(() => {
         const modal = document.querySelector(POPUP_CLASS);
         modal.showModal();
-    }
+    }, []);
 
-    const newFile = () => {
+    const newFile = useCallback(() => {
         const message = buildIONewMessage();
         browser.runtime.sendMessage(message);
-    }
+    }, []);
 
-    const confirmNewFile = () => {
+    const confirmNewFile = useCallback(() => {
         promptDispatch({ type: PromptType.CONFIRM, text: CONFIRM_NEW_PROMPT, onConfirm: newFile });
         displayPrompt();
-    }
+    }, []);
 
-    const openFile = () => {
+    const openFile = useCallback(() => {
         inputRef.current.click();
-    }
+    }, []);
 
-    const confirmOpenFile = () => {
+    const confirmOpenFile = useCallback(() => {
         promptDispatch({ type: PromptType.CONFIRM, text: CONFIRM_OPEN_PROMPT, onConfirm: openFile });
         displayPrompt();
-    }
+    }, []);
 
-    const fileSelected = () => {
+    const fileSelected = useCallback(() => {
         if(inputRef.current.files.length !== 1) return;
 
         const file = inputRef.current.files[0];
@@ -107,14 +107,14 @@ function Toolbar() {
         
         const message = buildIOOpenMessage(file);
         browser.runtime.sendMessage(message);
-    }
+    }, [inputRef]);
 
-    const saveFile = () => {
+    const saveFile = useCallback(() => {
         const message = buildIOSaveMessage();
         browser.runtime.sendMessage(message);
-    }
+    }, []);
 
-    const toggleFreeze = () => {
+    const toggleFreeze = useCallback(() => {
         const message = buildUIFreezeMessage();
         browser.runtime.sendMessage(message).then(
             (response) => freezeRef.current.setAttribute(
@@ -123,7 +123,7 @@ function Toolbar() {
             ),
             (error) => console.error(error)
         );
-    }
+    }, []);
 
     // Build React component
     const filters = <svg className="toolbarFilters" xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="32">
@@ -147,6 +147,7 @@ function Toolbar() {
             <ToolbarButton onClick={confirmNewFile} href={BUTTON_NEW} op="New File" />
             <ToolbarButton onClick={confirmOpenFile} href={BUTTON_OPEN} op="Open File" />
             <ToolbarButton onClick={saveFile} href={BUTTON_SAVE} op="Save File" />
+            {/* TODO Set the href of the freeze button according to the actual freeze state when the sidebar opens */}
             <ToolbarButton onClick={toggleFreeze} href={BUTTON_FREEZE} op="Freeze" ref={freezeRef} />
         </div>
     </div>

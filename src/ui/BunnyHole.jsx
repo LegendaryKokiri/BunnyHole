@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./bunnyhole.css";
 
@@ -40,7 +40,6 @@ const REPOSITION_TARGET_MARKER = "repositionTarget";
 
 // ERROR MESSAGES
 const ERROR_CONTEXT = "No context found. BunnyHole must be initialized within a BunnyHoleProvider JSX element.";
-
 
 /* *************************** *
  * BUNNY HOLE STATE MANAGEMENT *
@@ -360,15 +359,15 @@ function BunnyNode() {
     const { toastDispatch } = useToasts();
 
     // Declare event handlers
-    const addNode = () => {
+    const addNode = useCallback(() => {
         const message = buildUIAddMessage(bh.path);
         browser.runtime.sendMessage(message);
-    }
+    }, [bh]);
 
-    const confirmReposition = () => {
+    const confirmReposition = useCallback(() => {
         completeReposition(bh.path);
         toastDispatch(TOAST_DEACTIVATE)
-    }
+    }, [bh]);
 
     // Build React component
     const node = <div className="bunnyNode">        
@@ -409,11 +408,10 @@ function BunnyHole() {
     const indent = `${Math.max(bh.depth - 1, 0) * 24}px`;
 
     // Create event handlers
-    // TODO: useCallback?
-    const handleMessage = (message, _sender, _sendResponse) => {        
+    const handleMessage = useCallback((message, _sender, _sendResponse) => {        
         if(message.type !== MessageTypes.BH) return;     
         bunnyHoleDispatch(message.content);
-    }
+    }, []);
 
     // Define SVG filters for the BunnyHole (added to root node only)
     const svgFilters = isRoot ? <svg className="svgFilters" xmlns="http://www.w3.org/2000/svg" version="1.1">
