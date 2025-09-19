@@ -4,6 +4,10 @@ import "./popup.css";
 
 import Button, { ButtonType } from "./ui/widgets/Button.jsx";
 
+/* *************** *
+ * REACT COMPONENT *
+ *******************/
+
 function PopupApp() {
     const launch = () => {
         browser.sidebarAction.open();

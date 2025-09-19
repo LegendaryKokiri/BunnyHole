@@ -1,11 +1,18 @@
 import React, { useEffect } from "react";
-import BunnyHole, { BunnyHoleProvider } from "./ui/BunnyHole.jsx";
+import ReactDOM from "react-dom";
 import "./sidebar.css";
-import { buildIOLoadMessage } from "./modules/messages.mjs";
+
 import Toolbar from "./ui/Toolbar.jsx";
+import BunnyHole, { BunnyHoleProvider } from "./ui/BunnyHole.jsx";
 import NodeEditBox, { NodeEditProvider } from "./ui/NodeEditBox.jsx";
 import PromptBox, { PromptProvider } from "./ui/PromptBox.jsx";
 import ToastBox, {ToastProvider} from "./ui/ToastBox.jsx";
+
+import { buildIOLoadMessage } from "./modules/messages.mjs";
+
+/* *************** *
+ * REACT COMPONENT *
+ *******************/
 
 function SidebarApp() {
     useEffect(() => {

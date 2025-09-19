@@ -1,9 +1,12 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import ReactDOM from "react-dom";
 import "./toolbar.css";
+
 import Tooltip, { TooltipPosition } from "./widgets/Tooltip.jsx";
+
+import { usePrompts, PromptType } from "./PromptBox.jsx";
+
 import { buildIONewMessage, buildIOOpenMessage, buildIOSaveMessage, buildUIFreezeMessage } from "../modules/messages.mjs";
-import PromptBox, { usePrompts, PromptType } from "./PromptBox.jsx";
 
 /* ********* *
  * CONSTANTS *

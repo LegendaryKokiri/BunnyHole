@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
 import ReactDOM from "react-dom";
-import { buildUIAddMessage, buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
 import "./bunnyhole.css";
-import BunnyHoleClass from "../modules/bunny_hole.mjs"
-import { MessageTypes } from "../modules/messages.mjs";
-import { useToasts, TOAST_DEACTIVATE } from "./ToastBox.jsx";
-import Button, { ButtonCancel } from "./widgets/Button.jsx";
+
+import { ButtonCancel } from "./widgets/Button.jsx";
 import Tooltip from "./widgets/Tooltip.jsx";
+
 import { useNodeEdits } from "./NodeEditBox.jsx";
+import { useToasts, TOAST_DEACTIVATE } from "./ToastBox.jsx";
+
+import BunnyHoleClass from "../modules/bunny_hole.mjs"
+import { MessageTypes, buildUIAddMessage, buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
+
 
 /* ********* *
  * CONSTANTS *

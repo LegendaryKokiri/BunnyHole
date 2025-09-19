@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import React, { createContext, useContext, useReducer, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./nodeeditbox.css";
 
 import Button, { ButtonType } from "./widgets/Button.jsx";
 import Modal from "./widgets/Modal.jsx";
+
 import { buildUIEditMessage } from "../modules/messages.mjs";
 
 /* ********* *
