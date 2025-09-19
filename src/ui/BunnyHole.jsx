@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
 import ReactDOM from "react-dom";
 import { buildUIAddMessage, buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
 import "./bunnyhole.css";
-import { usePrompts, PROMPT_DEACTIVATE, PROMPT_MOVE } from "./PromptBox.jsx";
+import BunnyHoleClass from "../modules/bunny_hole.mjs"
+import { MessageTypes } from "../modules/messages.mjs";
+import { useToasts, TOAST_DEACTIVATE } from "./ToastBox.jsx";
 import Button, { ButtonCancel } from "./widgets/Button.jsx";
 import Tooltip from "./widgets/Tooltip.jsx";
 import { useNodeEdits } from "./NodeEditBox.jsx";
-import { usePopups } from "./PopupBox.jsx";
 
 /* ********* *
  * CONSTANTS *
@@ -34,6 +35,47 @@ const REPOSITION_ACTIVE_MARKER = "repositionActive";
 const REPOSITION_ELEMENT_MARKER = "repositioningThis";
 const REPOSITION_TARGET_MARKER = "repositionTarget";
 
+// ERROR MESSAGES
+const ERROR_CONTEXT = "No context found. BunnyHole must be initialized within a BunnyHoleProvider JSX element.";
+
+
+/* *************************** *
+ * BUNNY HOLE STATE MANAGEMENT *
+ *******************************/
+
+const EMPTY_BUNNY_HOLE = {
+    data: new BunnyHoleClass().jsObject,
+    depth: 0,
+    depthClassName: NODE_DEPTH_CLASSNAME,
+    path: [],
+    pathClassName: NODE_PATH_CLASSNAME
+}
+const BunnyHoleContext = createContext(EMPTY_BUNNY_HOLE);
+
+// TODO: Seems like the full hole is re-rendered each time.
+// Is it possible to cleverly use the reducer to prevent that?
+function bunnyHoleReducer(_state, action) {
+    return {
+        ..._state,
+        data: action
+    };
+}
+
+function BunnyHoleProvider({ children }) {
+    const [ bunnyHole, bunnyHoleDispatch ] = useReducer(bunnyHoleReducer, EMPTY_BUNNY_HOLE);
+    return <BunnyHoleContext.Provider value={{ bunnyHole, bunnyHoleDispatch }}>
+        {children}
+    </BunnyHoleContext.Provider>
+}
+
+function useBunnyHole() {
+    const bunnyHoleContext = useContext(BunnyHoleContext);
+    if(!bunnyHoleContext) throw new Error(ERROR_CONTEXT);
+    return bunnyHoleContext;
+}
+
+export { BunnyHoleContext, BunnyHoleProvider, useBunnyHole };
+
 /* ******************** *
  * REPOSITION UTILITIES *
  ************************/
@@ -46,11 +88,11 @@ function getClassName(target, startingString) {
     return null;
 }
 
-function buildNodeDepthClassName(nodePath) {
+function buildDepthClassName(nodePath) {
     return `${NODE_DEPTH_CLASSNAME}${nodePath.length}`;
 }
 
-function buildNodePathClassName(nodePath) {
+function buildPathClassName(nodePath) {
     return `${NODE_PATH_CLASSNAME}${nodePath.join(NODE_PATH_DELIMETER)}`;
 }
 
@@ -211,41 +253,46 @@ function NodeButton({handleClick, href, buttonClassName="nodeButton", filterName
 }
 
 
-function NodeTitle({children, isRoot}) {
-    if(isRoot) return <p className="mainTitle">{children}</p>
-    return <p className="title">{children}</p>;
+function NodeTitle({ children }) {
+    // Render main title on root node
+    const { bunnyHole: bh } = useBunnyHole();
+    if(bh.depth === 0) return <p className="mainTitle">{ children }</p>
+    
+    // Otherwise render standard title
+    return <p className="title">{ children }</p>;
 }
 
-function NodeButtonBar({isRoot, data, nodePath, nodePathClassName}) {
-    if(isRoot) return <></>;
+function NodeButtonBar() {
+    const { bunnyHole: bh } = useBunnyHole();
+    if(bh.depth === 0) return <></>;
 
     // Subscribe to relevant contexts
     const { nodeEditDispatch } = useNodeEdits();
-    const { promptDispatch } = usePrompts();
+    const { toastDispatch } = useToasts();
 
     // Declare event handlers
     const editNode = () => {
-        nodeEditDispatch({ path: nodePath, title: data.title, url: data.url });
+        nodeEditDispatch({ path: bh.path, title: bh.data.title, url: bh.data.url });
         const modal = document.querySelector(NODE_EDIT_CLASS);
         modal.showModal();
     }
 
     const deleteNode = () => {
         browser.runtime.sendMessage(
-            buildUIDeleteMessage(nodePath)
+            buildUIDeleteMessage(bh.path)
         );
     }
 
     const unpromptReposition = () => {
         cancelReposition();
-        promptDispatch(PROMPT_DEACTIVATE);
+        toastDispatch(TOAST_DEACTIVATE);
     }
 
     const promptReposition = () => {
         const cancelButton = <ButtonCancel onClick={unpromptReposition}>Cancel</ButtonCancel>;
         const movePrompt = { active: true, prompt: "Move to where?", buttons: [cancelButton] };
-        beginReposition(nodePathClassName);
-        promptDispatch(movePrompt);
+        beginReposition(bh.pathClassName);
+        toastDispatch(movePrompt);
     }
 
     // TODO: Standardize user-facing language around "nodes"
@@ -256,13 +303,24 @@ function NodeButtonBar({isRoot, data, nodePath, nodePathClassName}) {
     </div>
 }
 
-function NodeURL({children, isRoot}) {
-    if(isRoot) return <></>
-    return <a className="url">{children}</a>;
+function NodeURL({ children }) {
+    // Don't render URL on the root node
+    const { bunnyHole: bh } = useBunnyHole();
+    if(bh.depth === 0) return <></>;
+
+    // Render URL on all other nodes
+    return <a className="url">{ children }</a>;
 }
 
-function NodeSeparator({isRoot, handleAddClick, handleRepositionClick, depthClassName, nodePathClassName}) {
+function NodeSeparator({ handleAddClick, handleRepositionClick }) { // TODO Eliminate depthClassNode too
+    // Subscribe to context
+    const { bunnyHole: bh } = useBunnyHole();
+
+    // Declare refs
     const separatorRef = useRef(null);
+
+    // Precomputation
+    const isRoot = bh.depth === 0;
 
     // Create event handlers
     const handleAdd = () => {
@@ -277,7 +335,8 @@ function NodeSeparator({isRoot, handleAddClick, handleRepositionClick, depthClas
         handleRepositionClick();
     }
 
-    return <div onClick={handleReposition} className={`nodeSeparator ${depthClassName} ${nodePathClassName}`} ref={separatorRef}>
+    // Build React component
+    return <div onClick={handleReposition} className={`nodeSeparator ${bh.depthClassName} ${bh.pathClassName}`} ref={separatorRef}>
         <NodeButton href={BUTTON_HERE} buttonClassName="repositionButton" />
         <div className={`divider`}></div>
         {/* TODO: Once again standardize user-facing language around "Nodes" */}
@@ -286,43 +345,40 @@ function NodeSeparator({isRoot, handleAddClick, handleRepositionClick, depthClas
     </div>
 }
 
-function BunnyNode({data, nodePath=[]}) {
+function BunnyNode() {
+    // Subscribe to context
+    const { bunnyHole: bh } = useBunnyHole();
+
     // Precomputation
-    const depth = nodePath.length;
-    const isRoot = depth === 0;
-    const depthClassName = buildNodeDepthClassName(nodePath);
+    const isRoot = bh.depth === 0;
     const nodeRef = useRef(null);
-    const nodePathClassName = buildNodePathClassName(nodePath);
 
     // Subscribe to relevant contexts
-    const { promptDispatch } = usePrompts();
+    const { toastDispatch } = useToasts();
 
     // Declare event handlers
     const addNode = () => {
-        const message = buildUIAddMessage(nodePath);
+        const message = buildUIAddMessage(bh.path);
         browser.runtime.sendMessage(message);
     }
 
     const confirmReposition = () => {
-        completeReposition(nodePath);
-        promptDispatch(PROMPT_DEACTIVATE)
+        completeReposition(bh.path);
+        toastDispatch(TOAST_DEACTIVATE)
     }
 
     // Build React component
     const node = <div className="bunnyNode">        
-        <div className={`body ${nodePathClassName}`} ref={nodeRef} draggable="true"> 
+        <div className={`body ${bh.pathClassName}`} ref={nodeRef} draggable="true"> 
             <div className="heading">
-                <NodeTitle isRoot={isRoot}>{data.title}</NodeTitle>
-                <NodeButtonBar isRoot={isRoot} data={data} nodePath={nodePath} nodePathClassName={nodePathClassName} />
+                <NodeTitle>{ bh.data.title }</NodeTitle>
+                <NodeButtonBar />
             </div>
-            <NodeURL isRoot={isRoot}>{data.url}</NodeURL>
+            <NodeURL>{ bh.data.url }</NodeURL>
             <textarea className="input" name="Notes" rows="4" cols="88"></textarea>
             <NodeSeparator
-                isRoot={isRoot}
                 handleAddClick={addNode}
                 handleRepositionClick={confirmReposition}
-                depthClassName={depthClassName}
-                nodePathClassName={nodePathClassName}
             />
         </div>
     </div>
@@ -341,15 +397,22 @@ function BunnyNode({data, nodePath=[]}) {
     return node;
 }
 
-// TODO: nodePath should really be moved into context
-function BunnyHole({data, nodePath=[]}) {
-    // Precomputation
-    const depth = nodePath.length;
-    const isRoot = depth === 0;
-    const indent = `${Math.max(depth - 1, 0) * 24}px`;
-    const depthClassName = buildNodeDepthClassName(nodePath);
+function BunnyHole() {
+    // Subscribe to context
+    const { bunnyHole: bh, bunnyHoleDispatch } = useBunnyHole();
 
-    // Define SVG filters for the BunnyHole
+    // Precomputation
+    const isRoot = bh.depth === 0;
+    const indent = `${Math.max(bh.depth - 1, 0) * 24}px`;
+
+    // Create event handlers
+    // TODO: useCallback?
+    const handleMessage = (message, _sender, _sendResponse) => {        
+        if(message.type !== MessageTypes.BH) return;     
+        bunnyHoleDispatch(message.content);
+    }
+
+    // Define SVG filters for the BunnyHole (added to root node only)
     const svgFilters = isRoot ? <svg className="svgFilters" xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
             <filter id="dangerMask">
@@ -366,19 +429,29 @@ function BunnyHole({data, nodePath=[]}) {
     </svg> : <></>
 
     // Recursively generate the BunnyHole
-    // TODO: Seems like the full hole is re-rendered each time. Is there a way to prevent that with React?
     const bunnyHole = <div className="bunnyHole" style={{marginLeft: indent}}>
         {svgFilters}
-        <div className={`nestMarker ${depthClassName}`}></div>
+        <div className={`nestMarker ${bh.depthClassName}`}></div>
         <div className="content">
-            <BunnyNode data={data} nodePath={nodePath} />
+            <BunnyNode />
             {
-                data.children &&
-                data.children.map((child, index) => {
-                    return <BunnyHole key={child.reactKey}
-                        data={child}
-                        nodePath={nodePath.concat([index])}
-                    />
+                bh.data.children &&
+                bh.data.children.map((child, index) => {
+                    const childPath = bh.path.concat([index]);
+                    const childDepth = childPath.length;
+                    const childPathName = buildPathClassName(childPath);
+                    const childDepthName = buildDepthClassName(childPath);
+                    const childBunnyHole = {
+                        data: child,
+                        depth: childDepth,
+                        depthClassName: childDepthName,
+                        path: childPath,
+                        pathClassName: childPathName
+                    }
+                    const value = { bunnyHole: childBunnyHole, bunnyHoleReducer: bunnyHoleReducer };
+                    return <BunnyHoleContext value={value}>
+                        <BunnyHole key={child.reactKey} />
+                    </BunnyHoleContext>
                 })
             }
         </div>
@@ -390,10 +463,12 @@ function BunnyHole({data, nodePath=[]}) {
 
         document.addEventListener("dragover", dragOver);
         document.addEventListener("dragend", dragEnd);
+        browser.runtime.onMessage.addListener(handleMessage);
 
         return () => {
             document.removeEventListener("dragover", dragOver);
             document.removeEventListener("dragend", dragEnd);
+            browser.runtime.onMessage.removeListener(handleMessage);
         }
     });
 

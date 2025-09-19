@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import "./toolbar.css";
 import Tooltip, { TooltipPosition } from "./widgets/Tooltip.jsx";
 import { buildIONewMessage, buildIOOpenMessage, buildIOSaveMessage, buildUIFreezeMessage } from "../modules/messages.mjs";
-import PopupBox, { usePopups, PopupType } from "./PopupBox.jsx";
+import PromptBox, { usePrompts, PromptType } from "./PromptBox.jsx";
 
 /* ********* *
  * CONSTANTS *
@@ -27,7 +27,7 @@ import BUTTON_UNFREEZE from "../../res/buttons/button-play.png";
 // const BUTTON_UNFREEZE = require("../../res/buttons/button-play.png");
 
 // ELEMENT SELECTORS
-const POPUP_CLASS = ".popupModal";
+const POPUP_CLASS = ".promptModal"; // TODO Import this from the Prompt class
 
 // PROMPT TEXT
 const CONFIRM_NEW_PROMPT = "Any unsaved progress on your current Bunny Hole will be lost. Are you sure?";
@@ -69,7 +69,7 @@ function Toolbar() {
     const freezeRef = useRef(null);
 
     // Subscribe to relevant contexts
-    const { popupDispatch } = usePopups();
+    const { promptDispatch } = usePrompts();
 
     // Declare event handlers
     const displayPrompt = () => {
@@ -83,7 +83,7 @@ function Toolbar() {
     }
 
     const confirmNewFile = () => {
-        popupDispatch({ type: PopupType.CONFIRM, text: CONFIRM_NEW_PROMPT, onConfirm: newFile });
+        promptDispatch({ type: PromptType.CONFIRM, text: CONFIRM_NEW_PROMPT, onConfirm: newFile });
         displayPrompt();
     }
 
@@ -92,7 +92,7 @@ function Toolbar() {
     }
 
     const confirmOpenFile = () => {
-        popupDispatch({ type: PopupType.CONFIRM, text: CONFIRM_OPEN_PROMPT, onConfirm: openFile });
+        promptDispatch({ type: PromptType.CONFIRM, text: CONFIRM_OPEN_PROMPT, onConfirm: openFile });
         displayPrompt();
     }
 

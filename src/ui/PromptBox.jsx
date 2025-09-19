@@ -2,43 +2,42 @@ import React, { createContext, useContext, useReducer } from "react";
 import ReactDOM from "react-dom";
 
 import "./promptbox.css";
+import Modal from "./widgets/Modal.jsx";
+import Button, { ButtonType } from "./widgets/Button.jsx";
 
 /* ********* *
  * CONSTANTS *
  *************/
 
 // PROMPTS
-const PROMPT_DEACTIVATE = { active: false, prompt: "", buttons: [] };
+const PromptType = Object.freeze({
+    ALERT:   1,
+    CONFIRM: 2
+});
+
+const EMPTY_PROMPT = { type: PromptType.ALERT, text: "", onConfirm: () => {} };
 
 // ERROR MESSAGES
 const ERROR_CONTEXT = "No context found. PromptBox must be initialized within a PromptProvider JSX element.";
 
-export { PROMPT_DEACTIVATE };
+export { PromptType };
 
-/* *********************** *
- * PROMPT STATE MANAGEMENT *
- ***************************/
+/* ********************** *
+ * POPUP STATE MANAGEMENT *
+ **************************/
 
-const PromptContext = createContext(PROMPT_DEACTIVATE);
+const PromptContext = createContext(EMPTY_PROMPT);
 
-/**
- * Reducer for activating and deactivating prompts.
- * The advantage to a reducer is that the text of the prompt box can
- * be maintained as it hides itself, since the text going away
- * when it scrolls offscreen looks visually tacky.
- * 
- * @param { Object } state   The current prompt being displayed. 
- * @param { Object } action  The new prompt to be displayed.
- * @returns 
- */
-function promptReducer(state, action) {
-    if(!action.active) return { ...state, active: false };
-    return action;
+// A full-on reducer isn't necessary, but it makes it consistent with our other custom hooks.
+function promptReducer(_state, action) {
+    return {...action};
 }
 
 function PromptProvider({ children }) {
-    const [ prompt, promptDispatch ] = useReducer(promptReducer, PROMPT_DEACTIVATE);
-    return <PromptContext.Provider value={{prompt, promptDispatch}}> {children} </PromptContext.Provider>
+    const [ prompt, promptDispatch ] = useReducer(promptReducer, EMPTY_PROMPT);
+    return <PromptContext.Provider value={{ prompt, promptDispatch }}>
+        {children}
+    </PromptContext.Provider>
 }
 
 function usePrompts() {
@@ -52,18 +51,42 @@ export { PromptContext, PromptProvider, usePrompts };
 /* *************** *
  * REACT COMPONENT *
  *******************/
+function AlertButtons() {
+    return <div className="options">
+        <Button>OK</Button>
+    </div>
+}
+
+function ConfirmButtons({ onConfirm }) {
+    return <div className="options">
+        <Button onClick={onConfirm}>OK</Button>
+        <Button buttonType={ButtonType.DANGEROUS}>Cancel</Button>
+    </div>
+}
+
+function PromptButtons() {
+    const { prompt } = usePrompts();
+
+    switch(prompt.type) {
+        case PromptType.CONFIRM:
+            return <ConfirmButtons onConfirm={prompt.onConfirm} />;
+        case PromptType.ALERT:
+        default:
+            return <AlertButtons />;
+    }
+}
 
 function PromptBox() {
     const { prompt } = usePrompts();
-    const className = `promptBox ${prompt.active ? "active" : ""}`;
 
-    return <div className={className}>
-        {prompt.prompt}
-        {
-            prompt.buttons &&
-            prompt.buttons.map((item) => item)
-        }
-    </div>
+    return <Modal className="promptModal">
+        <form className="promptBox" method="dialog">
+            {prompt.text}
+            <div className="options">
+                <PromptButtons />
+            </div>
+        </form>
+    </Modal>
 }
 
 export default PromptBox;

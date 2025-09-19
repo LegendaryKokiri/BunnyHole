@@ -172,7 +172,10 @@ class BunnyHoleIO {
         const bunnyHole = JSON.stringify(this.#currentBunnyHole.jsObject);
         const blob = new Blob([bunnyHole], {type: "application/json"});
         const url = URL.createObjectURL(blob);
-        browser.downloads.download({ url: url, saveAs: true });
+        browser.downloads.download({ url: url, saveAs: true }).then(
+            () => {},
+            () => {}
+        );
     }
     
     #closeBunnyHole() {
