@@ -97,6 +97,12 @@ class BunnyHoleIO {
                     message.content.url
                 );
                 break;
+            case UICommands.EDIT_BH_NOTES:
+                this.#currentBunnyHole.editNotes(
+                    message.content.path,
+                    message.content.notes
+                );
+                break;
             case UICommands.DELETE_BH_NODE:
                 this.#currentBunnyHole.deleteNode(
                     message.content.path
@@ -126,7 +132,7 @@ class BunnyHoleIO {
         browser.tabs.query({active: true, currentWindow: true}).then(
             (activeTabList) => {
                 const tab = activeTabList[0];
-                const bunnyTab = new BunnyTab(tab.id, tab.title, tab.url);
+                const bunnyTab = new BunnyTab(tab.title, tab.url, "");
                 this.#currentBunnyHole = new BunnyHole();
                 this.#currentBunnyHole.createNode(bunnyTab); // TODO: In this case, we don't have to make a BunnyHole message and send it because creating the node does it for us. For load and open, we do have to. We should pick one and only one module to be in charge of this. (Probably bunny_hole.mjs)
                 this.#runCallbacks();
@@ -146,6 +152,8 @@ class BunnyHoleIO {
                 this.#runCallbacks();
                 const message = buildBHMessage(this.#currentBunnyHole.jsObject);
                 browser.runtime.sendMessage(message);
+                console.log("BunnyHoleIO.#loadBunnyHole: Loaded jsObject:");
+                console.log(this.#currentBunnyHole.jsObject);
             } 
         );
     }

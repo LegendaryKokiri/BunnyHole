@@ -9,7 +9,7 @@ import { useNodeEdits } from "./NodeEditBox.jsx";
 import { useToasts, TOAST_DEACTIVATE } from "./ToastBox.jsx";
 
 import BunnyHoleClass from "../modules/bunny_hole.mjs"
-import { MessageTypes, buildUIAddMessage, buildUIDeleteMessage, buildUISwapMessage } from "../modules/messages.mjs";
+import { MessageTypes, buildUIAddMessage, buildUIDeleteMessage, buildUINotesMessage, buildUISwapMessage } from "../modules/messages.mjs";
 
 
 /* ********* *
@@ -348,15 +348,16 @@ function NodeSeparator({ handleAddClick, handleRepositionClick }) { // TODO Elim
 }
 
 function BunnyNode() {
-    // Subscribe to context
+    // Subscribe to relevant contexts
     const { bunnyHole: bh } = useBunnyHole();
+    const { toastDispatch } = useToasts();
 
     // Precomputation
     const isRoot = bh.depth === 0;
-    const nodeRef = useRef(null);
 
-    // Subscribe to relevant contexts
-    const { toastDispatch } = useToasts();
+    // Declare refs
+    const nodeRef = useRef(null);
+    const notesRef = useRef(null);
 
     // Declare event handlers
     const addNode = useCallback(() => {
@@ -369,6 +370,11 @@ function BunnyNode() {
         toastDispatch(TOAST_DEACTIVATE)
     }, [bh]);
 
+    const handleBlur = useCallback((event) => {
+        const message = buildUINotesMessage(bh.path, event.target.value);
+        browser.runtime.sendMessage(message);
+    }, [bh])
+
     // Build React component
     const node = <div className="bunnyNode">        
         <div className={`body ${bh.pathClassName}`} ref={nodeRef} draggable="true"> 
@@ -377,7 +383,7 @@ function BunnyNode() {
                 <NodeButtonBar />
             </div>
             <NodeURL>{ bh.data.url }</NodeURL>
-            <textarea className="input" name="Notes" rows="4" cols="88"></textarea>
+            <textarea onBlur={handleBlur} className="input" name="Notes" rows="4" cols="88" ref={notesRef} />
             <NodeSeparator
                 handleAddClick={addNode}
                 handleRepositionClick={confirmReposition}
@@ -387,6 +393,8 @@ function BunnyNode() {
     
     // Initialize per-node drag listeners on non-root nodes
     useEffect(() => {
+        if(notesRef.current) notesRef.current.value = bh.data.notes;
+
         if(isRoot || !nodeRef.current) return;
         nodeRef.current.addEventListener("dragstart", dragStart);
 
@@ -394,7 +402,7 @@ function BunnyNode() {
             if(!nodeRef.current) return;
             nodeRef.current.removeEventListener("dragstart", dragStart);
         }
-    })
+    }) // TODO: Dependency on bh?
 
     return node;
 }

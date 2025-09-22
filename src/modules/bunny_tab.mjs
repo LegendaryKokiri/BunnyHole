@@ -1,38 +1,28 @@
 class BunnyTab {
-    #id = -1;
-    #title = "";
-    #url = "";
+    title = "";
+    url = "";
+    notes = "";
 
-    constructor(id, title, url) {
-        this.#id = id;
-        this.#title = title;
-        this.#url = this.#parseUrl(url);
+    constructor(title, url, notes) {
+        this.title = title;
+        this.url = this.#parseUrl(url);
+        this.notes = notes;
     }
 
-    get id() {
-        return this.#id;
-    }
-    
-    get title() {
-        return this.#title;
-    }
-
-    get url() {
-        return this.#url;
-    }
-
-    /**
-     * @param {{ title: string; url: string; }} valueObj
-     */
-    set values(valueObj) {
-        this.#title = valueObj.title;
-        this.#url = valueObj.url;
+    set url(url) {
+        this.url = this.#parseUrl(url);
     }
 
     toString() {
-        return `[BunnyTab "${this.#title}"]`
+        return `[BunnyTab "${this.title}"]`
     }
 
+    /**
+     * Parses the given URL.
+     * 
+     * @param {string} url 
+     * @returns {string} A parsed version of that url
+     */
     #parseUrl(url) {
         return url.split("#")[0]; // Remove named anchor
     }

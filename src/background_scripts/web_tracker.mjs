@@ -117,7 +117,7 @@ class WebTracker {
     #mapTabByLookup(tabId) {
         browser.tabs.get(tabId).then(
             (tab) => {
-                const bunnyTab = new BunnyTab(tab.id, tab.title, tab.url);
+                const bunnyTab = new BunnyTab(tab.title, tab.url, "");
                 this.#tabMap.set(tab.id, bunnyTab);
             },
             (error) => {
@@ -134,7 +134,7 @@ class WebTracker {
      * @param {tabs.Tab} tab 
      */
     #mapTabByInfo(tab) {
-        const bunnyTab = new BunnyTab(tab.id, tab.title, tab.url);
+        const bunnyTab = new BunnyTab(tab.title, tab.url, "");
         this.#tabMap.set(tab.id, bunnyTab);
     }
 
@@ -217,7 +217,7 @@ class WebTracker {
     #handleWebNavCompleted(details) {
         browser.tabs.get(details.tabId).then(
             (tab) => {
-                const loadedTab = new BunnyTab(tab.id, tab.title, tab.url);
+                const loadedTab = new BunnyTab(tab.title, tab.url, "");
                 this.#bunnyHole.createNode(loadedTab, this.#sourceUrl, true);
                 this.#mapTabByInfo(tab);
             },
