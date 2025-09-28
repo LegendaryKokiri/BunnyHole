@@ -2,32 +2,22 @@ import React, { useCallback, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./toolbar.css";
 
-import Tooltip, { TooltipPosition } from "./widgets/Tooltip.jsx";
+import Tooltip, { TooltipPosition } from "../widgets/Tooltip.jsx";
 
 import { usePrompts, PromptType } from "./PromptBox.jsx";
 
-import { buildIONewMessage, buildIOOpenMessage, buildIOSaveMessage, buildUIFreezeMessage } from "../modules/messages.mjs";
+import { buildIONewMessage, buildIOOpenMessage, buildIOSaveMessage, buildUIFreezeMessage } from "../../modules/messages.mjs";
 
 /* ********* *
  * CONSTANTS *
  *************/
 
 // FILE I/O
-const BUTTON_IMG_PATH = "../../res/buttons/";
-const BUTTON_IMG_EXTENSION = ".png";
-
-import BUTTON_NEW      from "../../res/buttons/button-new.png";
-import BUTTON_OPEN     from "../../res/buttons/button-open.png";
-import BUTTON_SAVE     from "../../res/buttons/button-save.png";
-import BUTTON_FREEZE   from "../../res/buttons/button-pause.png";
-import BUTTON_UNFREEZE from "../../res/buttons/button-play.png";
-
-// TODO: Is there any way to express these paths in term sof BUTTON_IMG_PATH and BUTTON_IMG_EXTENSION without making Webpack upset?
-// const BUTTON_NEW      = require("../../res/buttons/button-new.png");
-// const BUTTON_OPEN     = require("../../res/buttons/button-open.png");
-// const BUTTON_SAVE     = require("../../res/buttons/button-save.png");
-// const BUTTON_FREEZE   = require("../../res/buttons/button-pause.png");
-// const BUTTON_UNFREEZE = require("../../res/buttons/button-play.png");
+import BUTTON_NEW      from "../../../res/buttons/button-new.png";
+import BUTTON_OPEN     from "../../../res/buttons/button-open.png";
+import BUTTON_SAVE     from "../../../res/buttons/button-save.png";
+import BUTTON_FREEZE   from "../../../res/buttons/button-pause.png";
+import BUTTON_UNFREEZE from "../../../res/buttons/button-play.png";
 
 // ELEMENT SELECTORS
 const POPUP_CLASS = ".promptModal"; // TODO Import this from the Prompt class

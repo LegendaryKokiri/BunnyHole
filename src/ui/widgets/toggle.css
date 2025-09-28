@@ -1,0 +1,63 @@
+:root {
+    --toggle-switch-height: 34px;
+    --toggle-border: 2px;
+    --toggle-padding: 4px;
+    --toggle-slider-size: calc(var(--toggle-switch-height) - (2 * var(--toggle-padding)) - (2 * var(--toggle-border)));
+    --toggle-switch-width: calc(2 * (var(--toggle-slider-size) + var(--toggle-padding)));
+    --toggle-slider-distance: calc(var(--toggle-switch-width) / 2 - 2 * var(--toggle-padding));
+    --toggle-transition-time: 0.3s;
+}
+
+.toggle {
+    display: inline-block;
+    position: relative;
+    width: var(--toggle-switch-width);
+    height: var(--toggle-switch-height);
+}
+
+/* TODO: Does display: none work? */
+/* How does clicking it work if width and height are zero? */
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle .slider {
+    background-color: var(--cancel-color);
+    border: var(--toggle-border) solid var(--cancel-color-alt);
+    border-radius: var(--toggle-switch-height);
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: var(--toggle-transition-time);
+    -webkit-transition: var(--toggle-transition-time);
+}
+
+.toggle .slider:before {
+    background-color: var(--cancel-color-alt);
+    border-radius: 50%;
+    bottom: var(--toggle-padding);
+    content: "";
+    height: var(--toggle-slider-size);
+    left: var(--toggle-padding);
+    position: absolute;
+    width: var(--toggle-slider-size);
+    transition: var(--toggle-transition-time);
+    -webkit-transition: var(--toggle-transition-time);
+}
+
+.toggle input:checked + .slider {
+    background-color: var(--main-color);
+    border: var(--toggle-border) solid var(--main-color-alt);
+}
+
+.toggle input:checked + .slider:before {
+    background-color: var(--main-color-alt);
+    transform: translateX(var(--toggle-slider-distance));
+    -ms-transform: translateX(var(--toggle-slider-distance));
+    -webkit-transform: translateX(var(--toggle-slider-distance));
+}

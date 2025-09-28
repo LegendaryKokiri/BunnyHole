@@ -2,14 +2,14 @@ import React, { createContext, useCallback, useContext, useEffect, useReducer, u
 import ReactDOM from "react-dom";
 import "./bunnyhole.css";
 
-import { ButtonCancel } from "./widgets/Button.jsx";
-import Tooltip from "./widgets/Tooltip.jsx";
+import { ButtonCancel } from "../widgets/Button.jsx";
+import Tooltip from "../widgets/Tooltip.jsx";
 
 import { useNodeEdits } from "./NodeEditBox.jsx";
 import { useToasts, TOAST_DEACTIVATE } from "./ToastBox.jsx";
 
-import BunnyHoleClass from "../modules/bunny_hole.mjs"
-import { MessageTypes, buildUIAddMessage, buildUIDeleteMessage, buildUINotesMessage, buildUISwapMessage } from "../modules/messages.mjs";
+import BunnyHoleClass from "../../modules/bunny_hole.mjs"
+import { MessageTypes, buildUIAddMessage, buildUIDeleteMessage, buildUINotesMessage, buildUISwapMessage } from "../../modules/messages.mjs";
 
 
 /* ********* *
@@ -17,11 +17,11 @@ import { MessageTypes, buildUIAddMessage, buildUIDeleteMessage, buildUINotesMess
  *************/
 
 // FILE I/O
-import BUTTON_ADD        from "../../res/buttons/button-add.png";
-import BUTTON_HERE       from "../../res/buttons/button-here.png";
-import BUTTON_EDIT       from "../../res/buttons/button-edit.png";
-import BUTTON_REPOSITION from "../../res/buttons/button-reposition.png";
-import BUTTON_DELETE     from "../../res/buttons/button-delete.png";
+import BUTTON_ADD        from "../../../res/buttons/button-add.png";
+import BUTTON_HERE       from "../../../res/buttons/button-here.png";
+import BUTTON_EDIT       from "../../../res/buttons/button-edit.png";
+import BUTTON_REPOSITION from "../../../res/buttons/button-reposition.png";
+import BUTTON_DELETE     from "../../../res/buttons/button-delete.png";
 
 // CLASS SELECTORS
 const NEST_CLASS = ".bunnyHole > .nestMarker";
@@ -305,13 +305,13 @@ function NodeButtonBar() {
     </div>
 }
 
-function NodeURL({ children }) {
+function NodeURL({ href }) {
     // Don't render URL on the root node
     const { bunnyHole: bh } = useBunnyHole();
     if(bh.depth === 0) return <></>;
 
     // Render URL on all other nodes
-    return <a className="url">{ children }</a>;
+    return <a href={href} className="url">{href}</a>;
 }
 
 function NodeSeparator({ handleAddClick, handleRepositionClick }) { // TODO Eliminate depthClassNode too
@@ -382,7 +382,7 @@ function BunnyNode() {
                 <NodeTitle>{ bh.data.title }</NodeTitle>
                 <NodeButtonBar />
             </div>
-            <NodeURL>{ bh.data.url }</NodeURL>
+            <NodeURL href={ bh.data.url } />
             <textarea onBlur={handleBlur} className="input" name="Notes" rows="4" cols="88" ref={notesRef} />
             <NodeSeparator
                 handleAddClick={addNode}

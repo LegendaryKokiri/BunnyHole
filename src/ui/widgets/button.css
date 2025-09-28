@@ -23,21 +23,21 @@
 }
 
 .bhButton.standard {
-    background-color: #7fffd4;
-    color: #000000;
+    background-color: var(--main-color);
+    color: var(--text-color-main);
 }
 
 .bhButton.standard:hover {
-    background-color: #00694f;
-    color: #dfdfdf;
+    background-color: var(--main-color-alt);
+    color: var(--text-color-main);
 }
 
 .bhButton.dangerous {
-    background-color: #9e1818;
-    color: #dddddd;
+    background-color: var(--cancel-color);
+    color: var(--text-color-cancel);
 }
 
 .bhButton.dangerous:hover {
-    background-color: #f16f6f;
-    color: #000000;
+    background-color: var(--cancel-color-alt);
+    color: var(--text-color-cancel);
 }

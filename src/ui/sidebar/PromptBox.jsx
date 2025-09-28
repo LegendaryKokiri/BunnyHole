@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useReducer } from "react";
 import ReactDOM from "react-dom";
-import "./promptbox.css";
+import "./promptBox.css";
 
-import Modal from "./widgets/Modal.jsx";
-import Button, { ButtonType } from "./widgets/Button.jsx";
+import Modal from "../widgets/Modal.jsx";
+import Button, { ButtonType } from "../widgets/Button.jsx";
 
 /* ********* *
  * CONSTANTS *
@@ -17,14 +17,13 @@ const PromptType = Object.freeze({
 
 const EMPTY_PROMPT = { type: PromptType.ALERT, text: "", onConfirm: () => {} };
 
-// ERROR MESSAGES
-const ERROR_CONTEXT = "No context found. PromptBox must be initialized within a PromptProvider JSX element.";
-
 export { PromptType };
 
 /* ********************** *
  * POPUP STATE MANAGEMENT *
  **************************/
+
+const ERROR_CONTEXT = "No context found. PromptBox must be initialized within a PromptProvider JSX element.";
 
 const PromptContext = createContext(EMPTY_PROMPT);
 

@@ -5,7 +5,7 @@
 
 .toolbar {
     align-items: center;
-    background-color: aquamarine;
+    background-color: var(--main-color);
     display: flex;
     flex-direction: row;
     font-family: "Helvetica", "Trebuchet MS", sans-serif;

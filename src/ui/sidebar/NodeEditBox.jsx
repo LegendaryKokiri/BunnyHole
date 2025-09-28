@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useReducer, useRef } from "react";
 import ReactDOM from "react-dom";
-import "./nodeeditbox.css";
+import "./nodeEditBox.css";
 
-import Button, { ButtonType } from "./widgets/Button.jsx";
-import Modal from "./widgets/Modal.jsx";
+import Button, { ButtonType } from "../widgets/Button.jsx";
+import Modal from "../widgets/Modal.jsx";
 
-import { buildUIEditMessage } from "../modules/messages.mjs";
+import { buildUIEditMessage } from "../../modules/messages.mjs";
 
 /* ********* *
  * CONSTANTS *
@@ -14,19 +14,14 @@ import { buildUIEditMessage } from "../modules/messages.mjs";
 // EDIT OBJECT
 const EMPTY_EDIT = { path: [], title: "", url: "" };
 
-// ERROR MESSAGES
-const ERROR_CONTEXT = "No context found. NodeEditBox must be initialized within a NodeEditProvider JSX element.";
-
 /* ************************** *
  * NODE EDIT STATE MANAGEMENT *
  ******************************/
 
+const ERROR_CONTEXT = "No context found. NodeEditBox must be initialized within a NodeEditProvider JSX element.";
+
 const NodeEditContext = createContext(EMPTY_EDIT);
 
-// TODO: I'm not convinced a full-on reducer is necessary.
-// This this really is just setting state.
-// Is there another way to set up the provider?
-// Maybe setState in itself would do.
 function nodeEditReducer(_state, action) {
     return action;
 }

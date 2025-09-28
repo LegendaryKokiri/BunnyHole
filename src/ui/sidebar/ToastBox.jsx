@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer } from "react";
 import ReactDOM from "react-dom";
-import "./toastbox.css";
+import "./toastBox.css";
 
 /* ********* *
  * CONSTANTS *
@@ -9,14 +9,13 @@ import "./toastbox.css";
 // PROMPTS
 const TOAST_DEACTIVATE = { active: false, prompt: "", buttons: [] };
 
-// ERROR MESSAGES
-const ERROR_CONTEXT = "No context found. ToastBox must be initialized within a ToastProvider JSX element.";
-
 export { TOAST_DEACTIVATE };
 
 /* ********************** *
  * TOAST STATE MANAGEMENT *
  **************************/
+
+const ERROR_CONTEXT = "No context found. ToastBox must be initialized within a ToastProvider JSX element.";
 
 const ToastContext = createContext(TOAST_DEACTIVATE);
 

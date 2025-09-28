@@ -1,0 +1,25 @@
+.optionsMenu {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px 0px;
+}
+
+.option {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    gap: 15px 0px;
+    justify-content: space-around;
+}
+
+.ignoredURLs {
+    background-color: var(--main-color);
+    border: 2px solid var(--main-color-alt);
+    border-radius: 2px;
+    text-align: center;
+}
+
+.ignoredURLs tr {
+    text-align: center;
+}

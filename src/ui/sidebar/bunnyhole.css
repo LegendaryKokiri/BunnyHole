@@ -1,15 +1,6 @@
-@keyframes reveal {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(0%); }
-}
-
-@-webkit-keyframes reveal {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(0%); }
-}
-
 .bunnyHole {
     align-items: stretch;
+    background-color: var(--background-color);
     display: flex;
     flex-direction: row;
     font-family: "Helvetica", "Trebuchet MS", sans-serif;
@@ -61,11 +52,11 @@
 }
 
 .bunnyNode .mainTitle {
-    background-color: #7fffd4;
+    background-color: var(--main-color);
     border-radius: 6px;
     border-style: none;
     box-sizing: border-box;
-    color: #000000;
+    color: var(--text-color-main);
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 0px;
@@ -75,11 +66,11 @@
 }
 
 .bunnyNode .title {
-    background-color: #7fffd4;
+    background-color: var(--main-color);
     border-radius: 6px;
     border-style: none;
     box-sizing: border-box;
-    color: #000000;
+    color: var(--text-color-main);
     font-size: 16px;
     font-weight: bold;
     margin-bottom: 0px;
@@ -97,11 +88,11 @@
 }
 
 .bunnyNode .url {
-    background-color: #c8ffed;
+    background-color: var(--accent-color);
     border-radius: 6px;
     border-style: none;
     box-sizing: border-box;
-    color: #000000;
+    color: var(--text-color-accent);
     font-size: 16px;
     font-weight: bold;
     margin-top: 0px;
@@ -112,12 +103,13 @@
 }
 
 .bunnyNode .input {
-    background-color: #fff5b7;
+    background-color: var(--input-color);
     border: 0;
     border-bottom: 3px solid;
-    border-image: linear-gradient(to right, #7fffd4, #00694f);
+    border-image: linear-gradient(to right, var(--main-color), var(--main-color-alt));
     border-image-slice: 1;
     border-radius: 6px;
+    color: var(--text-color-input);
     font-family: "Helvetica", "Trebuchet MS", sans-serif;
     font-size: 16px;
     outline: 0;
@@ -231,4 +223,14 @@
     height: 5px;
     margin: 10px 0px;
     width: 100%;
+}
+
+@keyframes reveal {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0%); }
+}
+
+@-webkit-keyframes reveal {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0%); }
 }

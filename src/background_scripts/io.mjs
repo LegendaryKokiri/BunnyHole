@@ -152,8 +152,6 @@ class BunnyHoleIO {
                 this.#runCallbacks();
                 const message = buildBHMessage(this.#currentBunnyHole.jsObject);
                 browser.runtime.sendMessage(message);
-                console.log("BunnyHoleIO.#loadBunnyHole: Loaded jsObject:");
-                console.log(this.#currentBunnyHole.jsObject);
             } 
         );
     }

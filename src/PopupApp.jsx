@@ -1,28 +1,37 @@
 import React from "react";
 import ReactDOM from "react-dom"
-import "./popup.css";
+import { StaticRouter as Router, Routes, Route } from "react-router";
 
-import Button, { ButtonType } from "./ui/widgets/Button.jsx";
+import Theme, { ThemeProvider } from "./ui/themes/Theme.jsx";
+import MainMenu from "./ui/popup/MainMenu.jsx";
+import OptionsMenu from "./ui/popup/OptionsMenu.jsx";
+
+/* ********* *
+ * CONSTANTS *
+ *************/
+
+const PATH_ROOT = "/";
+const PATH_OPTIONS = "/options"
 
 /* *************** *
  * REACT COMPONENT *
  *******************/
 
 function PopupApp() {
-    const launch = () => {
-        browser.sidebarAction.open();
-    }
+    return <div>
+        <ThemeProvider>
+            <Theme>
+            <Router>
+            <Routes>
+                <Route path={PATH_ROOT} element={<OptionsMenu />} />
+                <Route path={PATH_OPTIONS} element={<OptionsMenu />} />
+                <Route path="*" element={<h1>Error: URL not found</h1>} />
+            </Routes>
+            </Router>
+            </Theme>
+        </ThemeProvider>
+    </div>
     
-    return (
-        <div>
-            <div className="popupMenu">
-                <h1>Bunny Hole</h1>
-                <Button onClick={launch}>Launch in Sidebar</Button>
-                <Button>Load Bunny Hole</Button>
-                <Button buttonType={ButtonType.DANGEROUS}>Exit</Button>
-            </div>
-        </div>
-    )
 }
 
 export default PopupApp;
