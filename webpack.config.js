@@ -66,7 +66,6 @@ module.exports = [{
                 { from: "res/icons/", to: "res/icons/"},
                 { from: "src/background_scripts/", to: "background_scripts/" },
                 { from: "src/modules", to: "modules/" },
-                { from: "src/options", to: "options/" },
                 { from: "manifest.json", to: "manifest.json" }
             ]
         })

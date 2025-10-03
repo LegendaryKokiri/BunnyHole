@@ -1,7 +1,22 @@
 import BunnyTab from "../modules/bunny_tab.mjs";
 import BunnyHole from "../modules/bunny_hole.mjs";
 import { isUndefined } from "../modules/utils.mjs";
-import { MessageTypes, UICommands } from "../modules/messages.mjs";
+import { MessageTypes, OptionCommands, UICommands } from "../modules/messages.mjs";
+import { StorageKeys } from "../modules/storage.mjs";
+
+/* ********* *
+ * CONSTANTS *
+ *************/
+
+export const DEFAULT_IGNORED_URLS = [
+    "google.com",
+    "bing.com",
+    "duckduckgo.com"
+];
+
+/* ***************** *
+ * WEB TRACKER CLASS *
+ *********************/
 
 class WebTracker {
 
@@ -9,7 +24,10 @@ class WebTracker {
     #tabMap = undefined;
     #sourceUrl = undefined; // The id of the tab sourcing new webpages
     #navInNewTab = false;   // Was a new tab created for the current web navigation?
-    #frozen = false;        // Are we currently responding to new webnav events?
+
+    #ignoredURLs = DEFAULT_IGNORED_URLS;  // Which URLs are we not adding to the Bunny Hole?
+    #frozen = false;                      // Are we currently responding to new webnav events?
+    #sidebarFreeze = false;
 
     #tabCreatedHandler = undefined;
     #tabActivatedHandler = undefined;
@@ -23,6 +41,8 @@ class WebTracker {
 
     constructor() {
         this.#tabMap = new Map();
+        this.#loadIgnoredURLs();
+        this.#loadSidebarFreeze();
 
         this.#tabCreatedHandler = this.#handleTabCreated.bind(this);
         this.#tabActivatedHandler = this.#handleTabActivated.bind(this);
@@ -35,6 +55,15 @@ class WebTracker {
         // The message handler is never re-added or removed. Hence it is added in the constructor.
         this.#messageHandler = this.#handleMessage.bind(this);
         browser.runtime.onMessage.addListener(this.#messageHandler);
+    }
+
+    /**
+     * Setter for this WebTracker's BunnyHole.
+     * 
+     * @param {BunnyHole} hole
+     */
+    set bunnyHole(hole) {
+        this.#bunnyHole = hole;
     }
 
     /**
@@ -74,6 +103,26 @@ class WebTracker {
         );
     }
 
+    #loadIgnoredURLs() {
+        const key = StorageKeys.OPTION_IGNORED;
+        browser.storage.local.get(key).then(
+            (results) => {
+                if(!(key in results)) return;
+                this.#ignoredURLs = results[key];
+            }
+        );
+    }
+
+    #loadSidebarFreeze() {
+        const key = StorageKeys.OPTION_FREEZE;
+        browser.storage.local.get(key).then(
+            (results) => {
+                if(!(key in results)) return;
+                this.#sidebarFreeze = results[key];
+            }
+        );
+    }
+
     /**
      * Enables all of this WebTracker's event listeners.
      */
@@ -101,10 +150,20 @@ class WebTracker {
     }
 
     /**
-     * @param {BunnyHole} hole
+     * Returns whether or not the given URL should be permitted in this
+     * WebTracker's Bunny Hole.
+     * 
+     * @param {string} url 
+     * @returns {boolean}
      */
-    set bunnyHole(hole) {
-        this.#bunnyHole = hole;
+    #shouldIgnoreUrl(url) {
+        // TODO This is way too rudimentary to be a general-case solution.
+        // We need to think of some way to bridge the gap between an easy UI and regex.
+        for(const ignoredURL of this.#ignoredURLs) {
+            if(url.includes(ignoredURL)) return true;
+        }
+
+        return false;
     }
 
     /**
@@ -218,8 +277,16 @@ class WebTracker {
         browser.tabs.get(details.tabId).then(
             (tab) => {
                 const loadedTab = new BunnyTab(tab.title, tab.url, "");
-                this.#bunnyHole.createNode(loadedTab, this.#sourceUrl, true);
                 this.#mapTabByInfo(tab);
+                if(this.#shouldIgnoreUrl(tab.url)) return;
+
+                // TODO This only checks the topmost window.
+                // We should rewrite this to check all of them.
+                browser.sidebarAction.isOpen({}).then((sidebarOpen) => {
+                    if(this.#frozen) return;
+                    if(!sidebarOpen && this.#sidebarFreeze) return;
+                    this.#bunnyHole.createNode(loadedTab, this.#sourceUrl, true);
+                })
             },
             (error) => {
                 console.error(error);
@@ -228,13 +295,27 @@ class WebTracker {
     }
 
     #handleMessage(message, _sender, sendResponse) {
+        switch(message.type) {
+            case MessageTypes.UI:
+                this.#handleUIMessage(message, sendResponse);
+                break;
+            case MessageTypes.OPTIONS:
+                this.#handleOptionsMessage(message);
+                break;
+            default:
+                break;
+        }
         if(!message.type === MessageTypes.UI) return;
+    }
+
+    #handleUIMessage(message, sendResponse) {
         switch(message.command) {
             case UICommands.ADD_BH_NODE:
                 browser.tabs.query({ active: true }).then(
                     (allTabs) => {
                         for(const tab of allTabs) {
                             const bunnyTab = this.#tabMap.get(tab.id);
+                            // TODO: Evaluate the interactions with manually adding an ignored URL, then navigating from it
                             this.#bunnyHole.placeNode(bunnyTab, message.content.path, true);
                             break;
                         }
@@ -246,9 +327,23 @@ class WebTracker {
                 break;
             case UICommands.FREEZE_BH:
                 this.#frozen = !this.#frozen;
+                // TODO Won't this wreck our tab map? Are we sure this is how we want to do things?
                 if(this.#frozen) this.#disableListeners();
                 else this.#enableListeners();
                 sendResponse({ content: this.#frozen }); // TODO: It's a bit of an oddity/violates abstraction to have this be the one message where we send a response. Can we make a more generalizable way to determine which messages get responses and which don't?
+                break;
+            default:
+                break;
+        }
+    }
+
+    #handleOptionsMessage(message) {
+        switch(message.command) {
+            case OptionCommands.IGNORED_URLS:
+                this.#loadIgnoredURLs();
+                break;
+            case OptionCommands.SIDEBAR_FREEZE:
+                this.#loadSidebarFreeze();
                 break;
             default:
                 break;

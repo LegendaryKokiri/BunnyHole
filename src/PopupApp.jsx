@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom"
-import { StaticRouter as Router, Routes, Route } from "react-router";
+import { MemoryRouter as Router, Routes, Route } from "react-router";
 
 import Theme, { ThemeProvider } from "./ui/themes/Theme.jsx";
 import MainMenu from "./ui/popup/MainMenu.jsx";
@@ -23,9 +23,9 @@ function PopupApp() {
             <Theme>
             <Router>
             <Routes>
-                <Route path={PATH_ROOT} element={<OptionsMenu />} />
+                <Route path={PATH_ROOT} element={<MainMenu />} />
                 <Route path={PATH_OPTIONS} element={<OptionsMenu />} />
-                <Route path="*" element={<h1>Error: URL not found</h1>} />
+                {/* <Route path="*" element={<h1>Error: URL not found</h1>} /> */}
             </Routes>
             </Router>
             </Theme>

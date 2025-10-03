@@ -2,5 +2,6 @@
     align-items: center;
     display: flex;
     flex-direction: column;
+    font-family: var(--font-family-1), var(--font-family-2), var(--font-family-3);
     gap: 15px 0px;
 }

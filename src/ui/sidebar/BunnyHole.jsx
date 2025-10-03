@@ -383,7 +383,7 @@ function BunnyNode() {
                 <NodeButtonBar />
             </div>
             <NodeURL href={ bh.data.url } />
-            <textarea onBlur={handleBlur} className="input" name="Notes" rows="4" cols="88" ref={notesRef} />
+            <textarea onBlur={handleBlur} className="input" name="Notes" rows="4" cols="40" ref={notesRef} />
             <NodeSeparator
                 handleAddClick={addNode}
                 handleRepositionClick={confirmReposition}

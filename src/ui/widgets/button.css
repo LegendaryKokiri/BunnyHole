@@ -9,7 +9,7 @@
     box-shadow: 0px 5px 5px #222222;
     box-sizing: border-box;
     cursor: pointer;
-    font-family: "Helvetica", "Trebuchet MS", sans-serif;
+    font-family: var(--font-family-1), var(--font-family-2), var(--font-family-3);
     font-size: 16px;
     font-weight: bold;
     padding: 10px 16px;
@@ -23,21 +23,21 @@
 }
 
 .bhButton.standard {
-    background-color: var(--main-color);
-    color: var(--text-color-main);
+    background-color: var(--accent-color);
+    color: var(--accent-color-text);
 }
 
 .bhButton.standard:hover {
     background-color: var(--main-color-alt);
-    color: var(--text-color-main);
+    color: var(--accent-color-text);
 }
 
 .bhButton.dangerous {
     background-color: var(--cancel-color);
-    color: var(--text-color-cancel);
+    color: var(--cancel-color-text);
 }
 
 .bhButton.dangerous:hover {
     background-color: var(--cancel-color-alt);
-    color: var(--text-color-cancel);
+    color: var(--cancel-color-text);
 }

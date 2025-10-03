@@ -4,7 +4,8 @@
 export const MessageTypes = Object.freeze({
     BH:          1,
     IO:          2,
-    UI:          4
+    UI:          4,
+    OPTIONS:     8,
 });
 
 export const IOCommands = Object.freeze({
@@ -22,6 +23,12 @@ export const UICommands = Object.freeze({
     SWAP_BH_NODES:   2004,
     DELETE_BH_NODE:  2005,
     FREEZE_BH:       2006
+});
+
+export const OptionCommands = Object.freeze({
+    IGNORED_URLS:   3001,
+    SIDEBAR_FREEZE: 3002,
+    THEME:          3003
 });
 
 export function buildBHMessage(bunnyHoleJsObj) {
@@ -109,6 +116,13 @@ export function buildUIFreezeMessage() {
     return {
         type: MessageTypes.UI,
         command: UICommands.FREEZE_BH,
+    }
+}
+
+export function buildOptionMessage(option) {
+    return {
+        type: MessageTypes.OPTIONS,
+        command: option
     }
 }
 

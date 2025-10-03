@@ -2,9 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./toggle.css";
 
-function Toggle(name) {
+function Toggle({ onChange, name, ref }) {
     return <div className="toggle">
-        <input type="checkbox" name={name} id={name} />
+        <input onChange={onChange} type="checkbox" name={name} id={name} ref={ref} />
         <label className="slider" htmlFor={name} />
     </div>
 }

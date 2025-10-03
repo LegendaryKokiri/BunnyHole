@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { StorageKeys } from "../../modules/storage.mjs";
 
 /* ********* *
  * CONSTANTS *
@@ -86,6 +87,11 @@ export const THEME_DISPLAY_PARAMS = [
     ]
 ];
 
+export const THEMES_BY_NAME = {
+    "Light Mode": THEME_DEFAULT,
+    "Dark Mode": THEME_DARK
+}
+
 /* ********************** *
  * THEME STATE MANAGEMENT *
  **************************/
@@ -101,11 +107,21 @@ function themeReducer(_state, action) {
     }
 
     // Set background color of full window according to theme
-    if(Object.hasOwn(action, BACKGROUND_COLOR)) {
-        document.body.style.setProperty(
-            "background-color", action[BACKGROUND_COLOR]
-        );
-    }
+    document.body.style.setProperty(
+        "background-color", action[BACKGROUND_COLOR]
+    );
+
+    // Set scrollbar color according to theme
+    // TODO Other --webkit and whatnot analogues to scrollbar-color?
+    // TODO Can we set scrollbar buttons?
+    document.documentElement.style.setProperty(
+        "scrollbar-color", `${action[ACCENT_COLOR]} ${action[MAIN_COLOR_ALT]}`
+    );
+
+    document.documentElement.style.setProperty("--font-family-1", "Helvetica");
+    document.documentElement.style.setProperty("--font-family-2", "Trebuchet MS");
+    document.documentElement.style.setProperty("--font-family-3", "sans-serif");
+
 
     return action;
 }
@@ -130,14 +146,23 @@ export { ThemeContext, ThemeProvider, useTheme };
  ********************/
 function Theme({ children }) {
     // Subscribe to relevant contexts
-    const { theme, themeDispatch } = useTheme();
-
-    // Apply theme on render
-    // TODO: Read saved theme from stored options
-    themeDispatch(theme);
+    const { themeDispatch } = useTheme();
 
     // This component does not render anything in itself
-    return <>{ children }</>
+    const element = <>{ children }</>
+
+    // Apply saved theme on initial render
+    useEffect(() => {
+        const key = StorageKeys.OPTION_THEME;
+        browser.storage.local.get(key).then(
+            (results) => {
+                if(!(key in results)) themeDispatch(THEME_DEFAULT);
+                else themeDispatch(THEMES_BY_NAME[results[key]]);
+            }
+        );
+    }, [])
+
+    return element;
 }
 
 export default Theme;

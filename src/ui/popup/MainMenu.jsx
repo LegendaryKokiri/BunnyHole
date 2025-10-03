@@ -19,7 +19,7 @@ function MainMenu() {
     const menu = <div className="mainMenu">
         <h1>Bunny Hole</h1>
         <Button onClick={launch}>Launch in Sidebar</Button>
-        <Link to={PATH_OPTIONS}>
+        <Link to={PATH_OPTIONS} viewTransition>
             <Button>Options</Button>
         </Link>
     </div>
