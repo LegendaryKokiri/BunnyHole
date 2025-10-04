@@ -6,6 +6,7 @@ import { ButtonCancel } from "../widgets/Button.jsx";
 import Tooltip from "../widgets/Tooltip.jsx";
 
 import { useNodeEdits } from "./NodeEditBox.jsx";
+import { useTheme } from "../themes/Theme.jsx";
 import { useToasts, TOAST_DEACTIVATE } from "./ToastBox.jsx";
 
 import BunnyHoleClass from "../../modules/bunny_hole.mjs"
@@ -22,6 +23,7 @@ import BUTTON_HERE       from "../../../res/buttons/button-here.png";
 import BUTTON_EDIT       from "../../../res/buttons/button-edit.png";
 import BUTTON_REPOSITION from "../../../res/buttons/button-reposition.png";
 import BUTTON_DELETE     from "../../../res/buttons/button-delete.png";
+import { ThemeElements } from "../themes/Theme.jsx";
 
 // CLASS SELECTORS
 const NEST_CLASS = ".bunnyHole > .nestMarker";
@@ -410,6 +412,7 @@ function BunnyNode() {
 function BunnyHole() {
     // Subscribe to context
     const { bunnyHole: bh, bunnyHoleDispatch } = useBunnyHole();
+    const { theme } = useTheme();
 
     // Precomputation
     const isRoot = bh.depth === 0;
@@ -422,16 +425,17 @@ function BunnyHole() {
     }, []);
 
     // Define SVG filters for the BunnyHole (added to root node only)
+    // TODO: These filters should be using theme colors
     const svgFilters = isRoot ? <svg className="svgFilters" xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
             <filter id="dangerMask">
-                <feFlood floodColor="#ff0000" result="flood" />
+                <feFlood floodColor={theme[ThemeElements.CANCEL_COLOR]} result="flood" />
                 <feComposite in="flood" in2="SourceAlpha" operator="atop" />
             </filter>
         </defs>
         <defs>
             <filter id="controlMask">
-                <feFlood floodColor="#00630dff" result="flood" />
+                <feFlood floodColor={theme[ThemeElements.MAIN_COLOR_ALT]} result="flood" />
                 <feComposite in="flood" in2="SourceAlpha" operator="atop" />
             </filter>
         </defs>
