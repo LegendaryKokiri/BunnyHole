@@ -220,26 +220,34 @@ class BunnyHole {
             }
         }
 
-        // Find the source node
-        const srcNode = this.#getNode(srcPath);
-        if(isUndefined(srcNode.#parent)) {
+        // Enforce that the root level may not be involved in repositioning
+        if(srcPath.length === 0) {
             console.error("Cannot move the root node.");
             return;
         }
-        
-        // Find the destination node
-        const dstNode = this.#getNode(dstPath);
-        if(isUndefined(dstNode.#parent)) {
+
+        if(dstPath.length === 0) {
             console.error("Cannot place a node on the same nesting level as the root node.");
             return;
         }
 
-        // Remove source tab from parent's children
-        srcNode.#parent.removeChild(srcNode);
+        // Remove source node from parent's children
+        const srcParent = this.#getNode(srcPath.slice(0, -1));
+        const srcNode = srcParent.#getNode(srcPath.slice(-1));
+        const srcIndex = srcPath.at(-1);
+        srcParent.#children.splice(srcIndex, 1);
+        srcParent.#obj.children.splice(srcIndex, 1);
 
-        // Replace source tab among destination's children
-        dstNode.#parent.insertChild(srcNode, dstNode, after)
+        // Replace source node among destination's children
+        const dstParent = this.#getNode(dstPath.slice(0, -1));
+        const afterOffset = after ? 1 : 0;
+        const dstIndex = dstPath.at(-1) + afterOffset;
+        dstParent.#children.splice(dstIndex, 0, srcNode);
+        dstParent.#obj.children.splice(dstIndex, 0, srcNode.jsObject);
 
+        // Update source node's parent pointer
+        srcNode.#parent = dstParent;
+        
         // Report change
         this.#reportChange();
     }
@@ -267,28 +275,10 @@ class BunnyHole {
         this.#obj.children.splice(index, 0, newNode.jsObject);
     }
 
-    // TODO: The only reason that removeChild() wasn't made private was to ease implementation. Could we rectify this?
-    // Maybe it could be done by going only to the source node parent path in the caller
-    removeChild(sourceNode) {
-        const sourceIndex = this.#children.indexOf(sourceNode);
-        this.#children.splice(sourceIndex, 1);
-        this.#obj.children.splice(sourceIndex, 1);
-    }
-
     #reportChange() {
         browser.storage.local.set({ [StorageKeys.BUNNY_HOLE]: this.#obj }).then(() => {});
         const message = buildBHMessage(this.#obj);
         browser.runtime.sendMessage(message);
-    }
-
-    // TODO: The only reason that insertChild() wasn't made private was to ease implementation. Could we rectify this?
-    // Maybe it could be done by going only to the destination node parent path in the caller
-    insertChild(sourceNode, destNode, after) {
-        const destIndex = this.#children.indexOf(destNode);
-        const addIndex = after ? destIndex + 1 : destIndex;
-        sourceNode.#parent = this; // TODO: Properly update the parent
-        this.#children.splice(addIndex, 0, sourceNode);
-        this.#obj.children.splice(addIndex, 0, sourceNode.jsObject);
     }
 
     /**
