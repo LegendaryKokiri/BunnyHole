@@ -142,27 +142,25 @@ class BunnyHole {
      * @param {string} url 
      * @returns {void}
      */
-    editNode(pathToNode, title, url) {
+    editNode(pathToNode, title = undefined, url = undefined, notes = undefined) {
         const node = this.#getNode(pathToNode);
-        node.#tab.title = title;
-        node.#tab.url = url;
-        // TODO Is there a broadly cleaner way to keep the jsObject updated? Maybe we could abstract it away to the BunnyTab more effectively?
-        node.#obj.title = title;
-        node.#obj.url = url;
-        this.#reportChange();
-    }
 
-    /**
-     * Edits the notes in this BunnyHole at the specified location.
-     * 
-     * @param {int[]} pathToNode 
-     * @param {string} notes
-     * @returns {void} 
-     */
-    editNotes(pathToNode, notes) {
-        const node = this.#getNode(pathToNode);
-        node.#tab.notes = notes;
-        node.#obj.notes = notes;
+        // TODO Is there a broadly cleaner way to keep the jsObject updated? Maybe we could abstract it away to the BunnyTab more effectively?
+        if(!isUndefined(title)) {
+            node.#tab.title = title;
+            node.#obj.title = title;
+        }
+
+        if(!isUndefined(url)) {
+            node.#tab.url = url;
+            node.#obj.url = url;
+        }
+
+        if(!isUndefined(notes)) {
+            node.#tab.notes = notes;
+            node.#obj.notes = notes;
+        } 
+        
         this.#reportChange();
     }
 
@@ -231,17 +229,20 @@ class BunnyHole {
             return;
         }
 
-        // Remove source node from parent's children
+        // Find parent and source nodes before any arrays are modified
         const srcParent = this.#getNode(srcPath.slice(0, -1));
         const srcNode = srcParent.#getNode(srcPath.slice(-1));
+        const dstParent = this.#getNode(dstPath.slice(0, -1));
+        const dstNode = dstParent.#getNode(dstPath.slice(-1));
+
+        // Remove source node from parent's children
         const srcIndex = srcPath.at(-1);
         srcParent.#children.splice(srcIndex, 1);
         srcParent.#obj.children.splice(srcIndex, 1);
 
         // Replace source node among destination's children
-        const dstParent = this.#getNode(dstPath.slice(0, -1));
         const afterOffset = after ? 1 : 0;
-        const dstIndex = dstPath.at(-1) + afterOffset;
+        const dstIndex = dstParent.#children.indexOf(dstNode) + afterOffset;
         dstParent.#children.splice(dstIndex, 0, srcNode);
         dstParent.#obj.children.splice(dstIndex, 0, srcNode.jsObject);
 

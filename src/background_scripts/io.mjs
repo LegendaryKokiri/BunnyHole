@@ -94,12 +94,15 @@ class BunnyHoleIO {
                 this.#currentBunnyHole.editNode(
                     message.content.path,
                     message.content.title,
-                    message.content.url
+                    message.content.url,
+                    undefined
                 );
                 break;
             case UICommands.EDIT_BH_NOTES:
-                this.#currentBunnyHole.editNotes(
+                this.#currentBunnyHole.editNode(
                     message.content.path,
+                    undefined,
+                    undefined,
                     message.content.notes
                 );
                 break;
